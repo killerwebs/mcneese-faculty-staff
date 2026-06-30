@@ -28,6 +28,56 @@ class FS_Meta {
 		);
 	}
 
+	/**
+	 * The detail fields organized into labeled sections for the edit form,
+	 * with input types, placeholders, and help text. Keys must match fields().
+	 */
+	public static function field_groups() {
+		return array(
+			array(
+				'title'  => __( 'Position', 'faculty-staff' ),
+				'fields' => array(
+					'fs_title' => array(
+						'type'        => 'text',
+						'placeholder' => __( 'e.g. Associate Professor of History', 'faculty-staff' ),
+						'desc'        => __( 'Shown under the name on directory cards and the bio page.', 'faculty-staff' ),
+					),
+				),
+			),
+			array(
+				'title'  => __( 'Contact', 'faculty-staff' ),
+				'fields' => array(
+					'fs_email'    => array(
+						'type'        => 'email',
+						'placeholder' => 'name@mcneese.edu',
+					),
+					'fs_phone'    => array(
+						'type'        => 'text',
+						'placeholder' => '337-475-0000',
+					),
+					'fs_location' => array(
+						'type'        => 'text',
+						'placeholder' => __( 'e.g. Kaufman Hall 103', 'faculty-staff' ),
+					),
+				),
+			),
+			array(
+				'title'  => __( 'Links & Photo', 'faculty-staff' ),
+				'fields' => array(
+					'fs_website'   => array(
+						'type'        => 'url',
+						'placeholder' => 'https://',
+					),
+					'fs_image_url' => array(
+						'type'        => 'url',
+						'placeholder' => 'https://',
+						'desc'        => __( 'Used only when no Featured Image is set. The CSV importer fills this in automatically.', 'faculty-staff' ),
+					),
+				),
+			),
+		);
+	}
+
 	public static function init() {
 		add_action( 'add_meta_boxes', array( __CLASS__, 'add_meta_box' ) );
 		add_action( 'save_post_' . fs_post_type(), array( __CLASS__, 'save' ), 10, 2 );
@@ -119,21 +169,51 @@ class FS_Meta {
 
 	public static function render( $post ) {
 		wp_nonce_field( 'fs_save_details', 'fs_details_nonce' );
-		echo '<style>.fs-meta-table{width:100%;border-collapse:collapse}.fs-meta-table th{text-align:left;width:180px;vertical-align:top;padding:10px 12px 10px 0;font-weight:600}.fs-meta-table td{padding:6px 0}.fs-meta-table input{width:100%;max-width:520px}</style>';
-		echo '<table class="fs-meta-table">';
-		foreach ( self::fields() as $key => $label ) {
-			$value = get_post_meta( $post->ID, $key, true );
-			$type  = ( 'fs_email' === $key ) ? 'email' : ( in_array( $key, array( 'fs_website', 'fs_image_url' ), true ) ? 'url' : 'text' );
-			printf(
-				'<tr><th><label for="%1$s">%2$s</label></th><td><input type="%3$s" id="%1$s" name="%1$s" value="%4$s" /></td></tr>',
-				esc_attr( $key ),
-				esc_html( $label ),
-				esc_attr( $type ),
-				esc_attr( $value )
-			);
-		}
-		echo '</table>';
-		echo '<p class="description">' . esc_html__( 'The person\'s biography goes in the main editor above. Departments are set in the Departments box.', 'faculty-staff' ) . '</p>';
+		$labels = self::fields();
+		?>
+		<style>
+			.fs-form { margin: 4px 0 0; }
+			.fs-form-section { padding: 4px 0 18px; }
+			.fs-form-section + .fs-form-section { border-top: 1px solid #e2e6ea; padding-top: 16px; }
+			.fs-form-section-title { margin: 0 0 14px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: #50575e; }
+			.fs-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px 24px; }
+			.fs-form-row label { display: block; font-weight: 600; margin-bottom: 4px; }
+			.fs-form-row .fs-input { width: 100%; }
+			.fs-form-desc { margin: 5px 0 0; color: #646970; font-size: 12px; }
+			.fs-form-note { margin: 16px 0 0; padding-top: 14px; border-top: 1px solid #e2e6ea; color: #646970; }
+		</style>
+		<div class="fs-form">
+			<?php foreach ( self::field_groups() as $group ) : ?>
+				<div class="fs-form-section">
+					<h2 class="fs-form-section-title"><?php echo esc_html( $group['title'] ); ?></h2>
+					<div class="fs-form-grid">
+						<?php foreach ( $group['fields'] as $key => $field ) :
+							$value = get_post_meta( $post->ID, $key, true );
+							$label = isset( $labels[ $key ] ) ? $labels[ $key ] : $key;
+							?>
+							<div class="fs-form-row">
+								<label for="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></label>
+								<input
+									type="<?php echo esc_attr( $field['type'] ); ?>"
+									id="<?php echo esc_attr( $key ); ?>"
+									name="<?php echo esc_attr( $key ); ?>"
+									value="<?php echo esc_attr( $value ); ?>"
+									class="fs-input regular-text"
+									placeholder="<?php echo esc_attr( isset( $field['placeholder'] ) ? $field['placeholder'] : '' ); ?>"
+								/>
+								<?php if ( ! empty( $field['desc'] ) ) : ?>
+									<p class="fs-form-desc"><?php echo esc_html( $field['desc'] ); ?></p>
+								<?php endif; ?>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				</div>
+			<?php endforeach; ?>
+			<p class="fs-form-note">
+				<?php esc_html_e( 'Name is the title above. Biography goes in the editor. Photo is set with the Featured Image box, and Departments in the Departments box.', 'faculty-staff' ); ?>
+			</p>
+		</div>
+		<?php
 	}
 
 	public static function save( $post_id, $post ) {

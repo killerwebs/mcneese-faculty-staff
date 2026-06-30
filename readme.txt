@@ -5,7 +5,7 @@ Tags: faculty, staff, directory, shortcode, csv import, departments
 Requires at least: 5.8
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -64,6 +64,14 @@ Recognized columns: Title, Content, Excerpt, Slug, Status, Order, Departments
 fs_location, fs_website.
 
 == Changelog ==
+
+= 1.2.0 =
+* Edit screen: people now use a clean single-form editor (classic editor) with the detail fields grouped into Position, Contact, and Links & Photo sections directly under the bio.
+
+= 1.1.0 =
+* Shortcode presentation options: layouts (grid/list/compact/names), photo_shape, accent color, responsive columns, groupby="department", and an A-Z index.
+* Per-card contact toggles: show_email, show_phone, show_location, show_website.
+* Admin list columns for Position / Email / Phone.
 
 = 1.0.0 =
 * Initial release.

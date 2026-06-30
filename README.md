@@ -3,13 +3,13 @@
 A lightweight, dependency-free WordPress plugin for managing a faculty/staff directory and displaying it anywhere with shortcodes. Modeled on a liberal-arts directory: a filterable general list, individual bio pages, and per-department embeds.
 
 - **Author:** [Killerwebsites.com](https://killerwebsites.com)
-- **Version:** 1.1.0
+- **Version:** 1.2.0
 - **Requires:** WordPress 5.8+, PHP 7.4+
 
 ## Features
 
 - **Custom post type** "Faculty & Staff" with a **Departments** taxonomy. Field/column keys deliberately match the WordPress export format so CSV exports re-import cleanly.
-- **Per-person fields:** Title/Position, Email, Phone, Office Location, Website, Photo — editable from a sidebar panel in the editor (no ACF dependency).
+- **Per-person fields:** Title/Position, Email, Phone, Office Location, Website, Photo — edited on a clean single-form screen with the fields grouped into labeled sections under the bio (no ACF dependency).
 - **Three shortcodes** with rich presentation options (layouts, contact display, theming, grouping, A–Z index).
 - **Individual bio pages** via theme-overridable templates.
 - **Batched CSV importer** with a live progress bar — resumable, and matches by slug so re-running updates instead of duplicating.

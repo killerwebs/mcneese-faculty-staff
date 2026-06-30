@@ -17,6 +17,18 @@ class FS_Post_Type {
 		self::register_taxonomy();
 	}
 
+	/**
+	 * Use the classic editor for people so the detail fields appear as one
+	 * organized form right under the bio, instead of being tucked into a
+	 * block-editor sidebar panel. Hooked on `use_block_editor_for_post_type`.
+	 */
+	public static function use_classic_editor( $use_block, $post_type ) {
+		if ( fs_post_type() === $post_type ) {
+			return false;
+		}
+		return $use_block;
+	}
+
 	protected static function register_post_type() {
 		$labels = array(
 			'name'               => __( 'Faculty & Staff', 'faculty-staff' ),
