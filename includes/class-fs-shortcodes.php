@@ -69,6 +69,8 @@ class FS_Shortcodes {
 				'show_phone'    => 'false',
 				'show_location' => 'false',
 				'show_website'  => 'false',
+				'show_excerpt'  => 'false', // short bio excerpt on the card
+				'button'        => '',      // call-to-action label, e.g. "View Profile" (empty = none)
 				'number'        => -1,     // max people (-1 = all)
 				'empty'         => __( 'No faculty or staff found.', 'faculty-staff' ),
 			),
@@ -172,6 +174,8 @@ class FS_Shortcodes {
 				'show_phone'    => 'true',
 				'show_location' => 'true',
 				'show_website'  => 'true',
+				'show_excerpt'  => 'false',
+				'button'        => '',
 			),
 			$atts,
 			'faculty_member'
@@ -442,8 +446,34 @@ class FS_Shortcodes {
 
 		self::render_contact( $post_id, $atts );
 
+		if ( self::truthy_att( $atts, 'show_excerpt' ) ) {
+			$excerpt = self::excerpt( $post_id );
+			if ( $excerpt ) {
+				echo '<p class="fs-card-excerpt">' . esc_html( $excerpt ) . '</p>';
+			}
+		}
+
+		$button = isset( $atts['button'] ) ? trim( (string) $atts['button'] ) : '';
+		if ( '' !== $button ) {
+			echo '<a class="fs-card-button" href="' . esc_url( $permalink ) . '">' . esc_html( $button ) . '</a>';
+		}
+
 		echo '</div>'; // .fs-card-body
 		echo '</article>';
+	}
+
+	/**
+	 * A short plain-text bio excerpt for cards: the manual excerpt if set,
+	 * otherwise trimmed post content.
+	 */
+	protected static function excerpt( $post_id, $words = 24 ) {
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			return '';
+		}
+		$raw = has_excerpt( $post ) ? $post->post_excerpt : $post->post_content;
+		$raw = wp_strip_all_tags( strip_shortcodes( (string) $raw ) );
+		return '' !== trim( $raw ) ? wp_trim_words( $raw, $words, '…' ) : '';
 	}
 
 	/**
