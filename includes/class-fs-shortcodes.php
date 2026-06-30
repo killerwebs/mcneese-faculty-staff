@@ -305,10 +305,9 @@ class FS_Shortcodes {
 
 		echo '<div class="fs-toolbar">';
 
-		echo '<div class="fs-toolbar-main">';
-
 		if ( $show_search ) {
-			echo '<div class="fs-search">';
+			echo '<div class="fs-tb-search">';
+			echo self::icon_search(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static inline SVG.
 			printf(
 				'<input type="search" class="fs-search-input" placeholder="%s" aria-label="%s" />',
 				esc_attr__( 'Search by name or title…', 'faculty-staff' ),
@@ -320,60 +319,54 @@ class FS_Shortcodes {
 		if ( $show_filter ) {
 			$terms = self::terms_in_query( $query );
 			if ( $terms ) {
-				echo '<div class="fs-filters" role="tablist" aria-label="' . esc_attr__( 'Filter by department', 'faculty-staff' ) . '">';
-				printf(
-					'<button type="button" class="fs-filter is-active" data-dept="" aria-pressed="true">%s</button>',
-					esc_html__( 'All', 'faculty-staff' )
-				);
+				echo '<select class="fs-tb-select fs-filter-select" aria-label="' . esc_attr__( 'Filter by department', 'faculty-staff' ) . '">';
+				printf( '<option value="">%s</option>', esc_html__( 'All Departments', 'faculty-staff' ) );
 				foreach ( $terms as $term ) {
-					printf(
-						'<button type="button" class="fs-filter" data-dept="%s" aria-pressed="false">%s</button>',
-						esc_attr( $term->slug ),
-						esc_html( $term->name )
-					);
+					printf( '<option value="%s">%s</option>', esc_attr( $term->slug ), esc_html( $term->name ) );
 				}
-				echo '</div>';
+				echo '</select>';
 			}
 		}
 
-		echo '</div>'; // .fs-toolbar-main
+		if ( $sort ) {
+			echo '<select class="fs-tb-select fs-sort-select" aria-label="' . esc_attr__( 'Sort order', 'faculty-staff' ) . '">';
+			printf( '<option value="asc">%s</option>', esc_html__( 'A → Z', 'faculty-staff' ) );
+			printf( '<option value="desc">%s</option>', esc_html__( 'Z → A', 'faculty-staff' ) );
+			echo '</select>';
+		}
 
-		if ( $sort || $view_toggle ) {
-			echo '<div class="fs-toolbar-controls">';
-
-			if ( $sort ) {
-				echo '<div class="fs-sort">';
-				echo '<span class="fs-control-label">' . esc_html__( 'Sort', 'faculty-staff' ) . '</span>';
-				echo '<span class="fs-seg" role="group" aria-label="' . esc_attr__( 'Sort order', 'faculty-staff' ) . '">';
-				printf( '<button type="button" class="fs-sort-btn is-active" data-sort="asc" aria-pressed="true">%s</button>', esc_html__( 'A–Z', 'faculty-staff' ) );
-				printf( '<button type="button" class="fs-sort-btn" data-sort="desc" aria-pressed="false">%s</button>', esc_html__( 'Z–A', 'faculty-staff' ) );
-				echo '</span></div>';
-			}
-
-			if ( $view_toggle ) {
-				$list = ( 'list' === $layout );
-				echo '<div class="fs-view">';
-				echo '<span class="fs-control-label">' . esc_html__( 'View', 'faculty-staff' ) . '</span>';
-				echo '<span class="fs-seg" role="group" aria-label="' . esc_attr__( 'View', 'faculty-staff' ) . '">';
-				printf(
-					'<button type="button" class="fs-view-btn%1$s" data-view="grid" aria-pressed="%2$s">%3$s</button>',
-					$list ? '' : ' is-active',
-					$list ? 'false' : 'true',
-					esc_html__( 'Grid', 'faculty-staff' )
-				);
-				printf(
-					'<button type="button" class="fs-view-btn%1$s" data-view="list" aria-pressed="%2$s">%3$s</button>',
-					$list ? ' is-active' : '',
-					$list ? 'true' : 'false',
-					esc_html__( 'List', 'faculty-staff' )
-				);
-				echo '</span></div>';
-			}
-
-			echo '</div>'; // .fs-toolbar-controls
+		if ( $view_toggle ) {
+			$list = ( 'list' === $layout );
+			echo '<div class="fs-tb-views" role="group" aria-label="' . esc_attr__( 'View', 'faculty-staff' ) . '">';
+			printf(
+				'<button type="button" class="fs-view-btn%1$s" data-view="grid" aria-label="%2$s" aria-pressed="%3$s">%4$s</button>',
+				$list ? '' : ' is-active',
+				esc_attr__( 'Grid view', 'faculty-staff' ),
+				$list ? 'false' : 'true',
+				self::icon_grid() // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static inline SVG.
+			);
+			printf(
+				'<button type="button" class="fs-view-btn%1$s" data-view="list" aria-label="%2$s" aria-pressed="%3$s">%4$s</button>',
+				$list ? ' is-active' : '',
+				esc_attr__( 'List view', 'faculty-staff' ),
+				$list ? 'true' : 'false',
+				self::icon_list() // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static inline SVG.
+			);
+			echo '</div>';
 		}
 
 		echo '</div>'; // .fs-toolbar
+	}
+
+	/* Inline SVG icons (currentColor) for the toolbar. */
+	protected static function icon_search() {
+		return '<svg class="fs-tb-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
+	}
+	protected static function icon_grid() {
+		return '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>';
+	}
+	protected static function icon_list() {
+		return '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="4" width="5" height="5" rx="1"></rect><rect x="10" y="5" width="11" height="2" rx="1"></rect><rect x="3" y="14" width="5" height="5" rx="1"></rect><rect x="10" y="15" width="11" height="2" rx="1"></rect></svg>';
 	}
 
 	/**

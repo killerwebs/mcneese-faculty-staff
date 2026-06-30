@@ -28,102 +28,104 @@
 	color: var(--fs-text);
 }
 
-/* ---------- Toolbar (filter + search) ---------- */
+/* ---------- Toolbar (search + filter + sort + view) ----------
+   Styled to match the site's program-finder bar: a rounded gray container
+   wrapping a search field, dropdowns, and an icon view toggle. */
 .fs-toolbar {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 14px;
+	gap: 12px;
 	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 22px;
+	background: var(--fs-bg-soft);
+	border: 1px solid var(--fs-border);
+	border-radius: 12px;
+	padding: 16px;
+	margin-bottom: 24px;
 }
-.fs-toolbar-main {
+
+/* Search field with leading icon */
+.fs-tb-search {
+	flex: 1 1 240px;
 	display: flex;
-	flex-wrap: wrap;
-	gap: 14px;
 	align-items: center;
+	gap: 8px;
+	background: #fff;
+	border: 1px solid #cbd5e0;
+	border-radius: 6px;
+	padding: 0 12px;
 }
-.fs-toolbar-controls {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 18px;
-	align-items: center;
+.fs-tb-search:focus-within {
+	border-color: var(--fs-accent);
+	box-shadow: 0 0 0 3px rgba(0, 82, 155, .12);
 }
-.fs-sort,
-.fs-view {
-	display: inline-flex;
-	align-items: center;
-}
-.fs-control-label {
-	font-size: 13px;
+.fs-tb-icon {
+	flex: none;
 	color: var(--fs-muted);
-	margin-right: 8px;
 }
-.fs-seg {
+.fs-search-input {
+	flex: 1;
+	border: 0;
+	background: transparent;
+	padding: 10px 0;
+	font-size: 15px;
+	color: var(--fs-text);
+}
+.fs-search-input:focus {
+	outline: none;
+}
+
+/* Dropdowns (filter + sort) */
+.fs-tb-select {
+	appearance: none;
+	-webkit-appearance: none;
+	background-color: #fff;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%234b5563' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+	border: 1px solid #cbd5e0;
+	border-radius: 6px;
+	padding: 9px 32px 9px 12px;
+	font-size: 14px;
+	color: var(--fs-text);
+	line-height: 1.4;
+	cursor: pointer;
+}
+.fs-tb-select:focus {
+	outline: none;
+	border-color: var(--fs-accent);
+	box-shadow: 0 0 0 3px rgba(0, 82, 155, .12);
+}
+
+/* Icon view toggle */
+.fs-tb-views {
 	display: inline-flex;
 	background: #fff;
-	border: 1px solid var(--fs-border);
-	border-radius: 999px;
+	border: 1px solid #cbd5e0;
+	border-radius: 6px;
 	overflow: hidden;
 }
-.fs-seg button {
+.fs-view-btn {
 	appearance: none;
 	border: 0;
 	background: transparent;
 	color: var(--fs-muted);
-	padding: 7px 16px;
-	font-size: 14px;
-	line-height: 1.2;
+	width: 42px;
+	height: 38px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	cursor: pointer;
 	transition: background .15s ease, color .15s ease;
 }
-.fs-seg button + button {
-	border-left: 1px solid var(--fs-border);
+.fs-view-btn + .fs-view-btn {
+	border-left: 1px solid #cbd5e0;
 }
-.fs-seg button:hover {
+.fs-view-btn:hover {
 	color: var(--fs-accent);
 }
-.fs-seg button.is-active {
-	background: var(--fs-accent);
+.fs-view-btn.is-active {
+	background: var(--fs-heading-color);
 	color: #fff;
-}
-.fs-filters {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-}
-.fs-filter {
-	appearance: none;
-	border: 1px solid var(--fs-border);
-	background: #fff;
-	color: var(--fs-muted);
-	padding: 7px 14px;
-	border-radius: 999px;
-	font-size: 14px;
-	line-height: 1.2;
-	cursor: pointer;
-	transition: all .15s ease;
-}
-.fs-filter:hover {
-	border-color: var(--fs-accent);
-	color: var(--fs-accent);
-}
-.fs-filter.is-active {
-	background: var(--fs-accent);
-	border-color: var(--fs-accent);
-	color: #fff;
-}
-.fs-search-input {
-	min-width: 240px;
-	padding: 9px 14px;
-	border: 1px solid var(--fs-border);
-	border-radius: var(--fs-radius);
-	font-size: 15px;
-}
-.fs-search-input:focus {
-	outline: none;
-	border-color: var(--fs-accent);
-	box-shadow: 0 0 0 3px rgba(0, 82, 155, .12);
 }
 
 /* ---------- Grid ---------- */

@@ -77,6 +77,7 @@ fs_location, fs_website.
 * Card button restyled to match the McNeese program-card button (color, 6px radius, letter-spacing).
 * Bio + directory archive now render in a centered, padded container so they format correctly on blank/zero themes (e.g. Breakdance) that supply no content wrapper.
 * New fs_use_plugin_templates filter to hand single/archive templating to a page builder or theme instead.
+* Toolbar restyled to match the site's program-finder bar: a rounded container with an icon search field, department and sort dropdowns, and a grid/list icon view toggle.
 
 = 1.1.0 =
 * Shortcode presentation options: layouts (grid/list/compact/names), photo_shape, accent color, responsive columns, groupby="department", and an A-Z index.

@@ -7,7 +7,8 @@
 
 	function initDirectory( root ) {
 		var cards = Array.prototype.slice.call( root.querySelectorAll( '.fs-card' ) );
-		var filters = Array.prototype.slice.call( root.querySelectorAll( '.fs-filter' ) );
+		var filterSelect = root.querySelector( '.fs-filter-select' );
+		var sortSelect = root.querySelector( '.fs-sort-select' );
 		var groups = Array.prototype.slice.call( root.querySelectorAll( '.fs-group' ) );
 		var indexLinks = Array.prototype.slice.call( root.querySelectorAll( '.fs-index-link' ) );
 		var searchInput = root.querySelector( '.fs-search-input' );
@@ -38,17 +39,12 @@
 			}
 		}
 
-		filters.forEach( function ( btn ) {
-			btn.addEventListener( 'click', function () {
-				activeDept = btn.getAttribute( 'data-dept' ) || '';
-				filters.forEach( function ( b ) {
-					var on = b === btn;
-					b.classList.toggle( 'is-active', on );
-					b.setAttribute( 'aria-pressed', on ? 'true' : 'false' );
-				} );
+		if ( filterSelect ) {
+			filterSelect.addEventListener( 'change', function () {
+				activeDept = filterSelect.value || '';
 				apply();
 			} );
-		} );
+		}
 
 		if ( searchInput ) {
 			searchInput.addEventListener( 'input', function () {
@@ -70,8 +66,7 @@
 			} );
 		} );
 
-		// Sort (A–Z / Z–A): reorder cards within each grid by name.
-		var sortBtns = Array.prototype.slice.call( root.querySelectorAll( '.fs-sort-btn' ) );
+		// Sort (A → Z / Z → A): reorder cards within each grid by name.
 		function applySort( dir ) {
 			var grids = root.querySelectorAll( '.fs-grid' );
 			Array.prototype.forEach.call( grids, function ( grid ) {
@@ -84,16 +79,11 @@
 				items.forEach( function ( item ) { grid.appendChild( item ); } );
 			} );
 		}
-		sortBtns.forEach( function ( btn ) {
-			btn.addEventListener( 'click', function () {
-				applySort( btn.getAttribute( 'data-sort' ) || 'asc' );
-				sortBtns.forEach( function ( b ) {
-					var on = b === btn;
-					b.classList.toggle( 'is-active', on );
-					b.setAttribute( 'aria-pressed', on ? 'true' : 'false' );
-				} );
+		if ( sortSelect ) {
+			sortSelect.addEventListener( 'change', function () {
+				applySort( sortSelect.value || 'asc' );
 			} );
-		} );
+		}
 
 		// A-Z index: scroll to the first visible card starting with that letter.
 		indexLinks.forEach( function ( link ) {
