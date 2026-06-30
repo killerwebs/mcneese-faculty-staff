@@ -1,0 +1,13 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+
+# Claude Code local settings
+.claude/
+
+# Build artifacts
+*.zip
+
+# Dependencies (not used today, but safe to ignore)
+node_modules/
+vendor/
