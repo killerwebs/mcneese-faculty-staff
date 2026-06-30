@@ -5,7 +5,7 @@ Tags: faculty, staff, directory, shortcode, csv import, departments
 Requires at least: 5.8
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.2.6
+Stable tag: 1.2.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,7 +65,8 @@ fs_location, fs_website.
 
 == Changelog ==
 
-= 1.2.6 =
+= 1.2.7 =
+* Shortcodes admin page: added an interactive shortcode builder — pick a type and options and copy the generated shortcode (only non-default options are included).
 * Sorting and the A–Z index now go by last name (ignoring "Dr." and ", PhD"), and last_name is the default order — previously "Dr." names all clumped under D.
 * Bio page "Back" link now returns to the page the visitor came from (the department list they clicked through from) instead of always the full directory; falls back to the directory archive on direct visits.
 * New dept_badge attribute: show the department as a pill overlay on the photo, matching the program cards.

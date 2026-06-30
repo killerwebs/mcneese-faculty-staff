@@ -20,21 +20,23 @@ class FS_Shortcode_Help {
 		// "Shortcode" column on the Departments term list.
 		add_filter( 'manage_edit-' . fs_taxonomy() . '_columns', array( __CLASS__, 'term_columns' ) );
 		add_filter( 'manage_' . fs_taxonomy() . '_custom_column', array( __CLASS__, 'term_column_content' ), 10, 3 );
-		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_copy' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 	}
 
 	/**
-	 * Load the copy-to-clipboard helper on the Departments term screen.
+	 * Load admin helpers: copy-to-clipboard on the Departments term screen,
+	 * and the shortcode builder on the Shortcodes page.
 	 */
-	public static function enqueue_copy( $hook ) {
-		if ( 'edit-tags.php' !== $hook && 'term.php' !== $hook ) {
-			return;
-		}
+	public static function enqueue_assets( $hook ) {
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		if ( ! $screen || fs_taxonomy() !== $screen->taxonomy ) {
-			return;
+
+		if ( ( 'edit-tags.php' === $hook || 'term.php' === $hook ) && $screen && fs_taxonomy() === $screen->taxonomy ) {
+			wp_enqueue_script( 'fs-admin-copy', FS_DIR_URL . 'assets/js/fs-admin-copy.js', array(), FS_DIR_VERSION, true );
 		}
-		wp_enqueue_script( 'fs-admin-copy', FS_DIR_URL . 'assets/js/fs-admin-copy.js', array(), FS_DIR_VERSION, true );
+
+		if ( false !== strpos( (string) $hook, 'fs-shortcodes' ) ) {
+			wp_enqueue_script( 'fs-shortcode-builder', FS_DIR_URL . 'assets/js/fs-shortcode-builder.js', array(), FS_DIR_VERSION, true );
+		}
 	}
 
 	/**
@@ -160,7 +162,26 @@ class FS_Shortcode_Help {
 				.fs-help .fs-help-default { color: #646970; white-space: nowrap; }
 				.fs-help-depts { max-width: 920px; }
 				.fs-help-depts code { background: #f6f7f7; border: 1px solid #e0e0e0; border-radius: 4px; padding: 2px 6px; }
+				/* Builder */
+				.fs-builder { max-width: 920px; }
+				.fs-builder-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px 22px; }
+				.fsb-field { display: flex; flex-direction: column; gap: 4px; }
+				.fsb-field > label:first-child { font-weight: 600; font-size: 13px; }
+				.fsb-field.fsb-check { flex-direction: row; align-items: center; gap: 8px; }
+				.fsb-field.fsb-check label { font-weight: 400; display: flex; align-items: center; gap: 8px; }
+				.fsb-field select, .fsb-field input[type="number"], .fsb-field input[type="text"] { max-width: 100%; }
+				.fs-builder-out { margin-top: 18px; padding-top: 16px; border-top: 1px solid #e2e6ea; }
+				.fs-builder-out label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+				.fs-builder-out-row { display: flex; gap: 10px; align-items: stretch; }
+				#fsb-output { flex: 1; font-family: Menlo, Consolas, monospace; font-size: 14px; padding: 10px 12px; border: 1px solid #cbd5e0; border-radius: 6px; background: #f6f7f7; }
+				#fsb-copy { white-space: nowrap; }
 			</style>
+
+			<h2><?php esc_html_e( 'Shortcode builder', 'faculty-staff' ); ?></h2>
+			<p class="description" style="max-width:920px"><?php esc_html_e( 'Pick a type and options; the shortcode updates below. Only non-default options are included, so it stays tidy.', 'faculty-staff' ); ?></p>
+			<?php self::render_builder(); ?>
+
+			<h2><?php esc_html_e( 'All shortcodes &amp; options', 'faculty-staff' ); ?></h2>
 
 			<?php
 			// --- [faculty_directory] ---
@@ -218,6 +239,121 @@ class FS_Shortcode_Help {
 		} )();
 		</script>
 		<?php
+	}
+
+	/**
+	 * The interactive shortcode builder form. Driven by fs-shortcode-builder.js,
+	 * which emits only attributes that differ from each shortcode's defaults.
+	 */
+	protected static function render_builder() {
+		$terms = get_terms( array( 'taxonomy' => fs_taxonomy(), 'hide_empty' => false ) );
+		if ( is_wp_error( $terms ) ) {
+			$terms = array();
+		}
+		$people = get_posts(
+			array(
+				'post_type'      => fs_post_type(),
+				'post_status'    => 'publish',
+				'posts_per_page' => 200,
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+			)
+		);
+
+		echo '<div class="fs-help-card fs-builder" id="fs-builder">';
+		echo '<div class="fs-builder-grid">';
+
+		// Shortcode type.
+		echo '<div class="fsb-field"><label for="fsb-type">' . esc_html__( 'Shortcode', 'faculty-staff' ) . '</label><select id="fsb-type">';
+		printf( '<option value="faculty_directory">%s</option>', esc_html__( 'Directory (everyone, filterable)', 'faculty-staff' ) );
+		printf( '<option value="faculty_department">%s</option>', esc_html__( 'Single department', 'faculty-staff' ) );
+		printf( '<option value="faculty_member">%s</option>', esc_html__( 'Single person', 'faculty-staff' ) );
+		echo '</select></div>';
+
+		// Directory scope (optional).
+		echo '<div class="fsb-field" data-for="faculty_directory"><label>' . esc_html__( 'Limit to department', 'faculty-staff' ) . '</label><select data-attr="department"><option value="">' . esc_html__( 'All departments', 'faculty-staff' ) . '</option>';
+		foreach ( $terms as $t ) {
+			printf( '<option value="%s">%s</option>', esc_attr( $t->slug ), esc_html( $t->name ) );
+		}
+		echo '</select></div>';
+
+		// Department (required for [faculty_department]).
+		echo '<div class="fsb-field" data-for="faculty_department"><label>' . esc_html__( 'Department', 'faculty-staff' ) . '</label><select data-attr="dept" data-required="1">';
+		if ( empty( $terms ) ) {
+			echo '<option value="">' . esc_html__( '(no departments yet)', 'faculty-staff' ) . '</option>';
+		}
+		foreach ( $terms as $t ) {
+			printf( '<option value="%s">%s</option>', esc_attr( $t->slug ), esc_html( $t->name ) );
+		}
+		echo '</select></div>';
+
+		// Person (required for [faculty_member]).
+		echo '<div class="fsb-field" data-for="faculty_member"><label>' . esc_html__( 'Person', 'faculty-staff' ) . '</label><select data-attr="slug" data-required="1">';
+		if ( empty( $people ) ) {
+			echo '<option value="">' . esc_html__( '(no people yet)', 'faculty-staff' ) . '</option>';
+		}
+		foreach ( $people as $p ) {
+			printf( '<option value="%s">%s</option>', esc_attr( $p->post_name ), esc_html( get_the_title( $p ) ) );
+		}
+		echo '</select></div>';
+
+		// Selects.
+		self::builder_select( 'layout', __( 'Layout', 'faculty-staff' ), array( 'grid', 'list', 'compact', 'names' ), 'faculty_directory,faculty_department,faculty_member' );
+		echo '<div class="fsb-field" data-for="faculty_directory,faculty_department"><label>' . esc_html__( 'Columns', 'faculty-staff' ) . '</label><input type="number" min="1" max="6" value="3" data-attr="columns" /></div>';
+		self::builder_select( 'photo_shape', __( 'Photo shape', 'faculty-staff' ), array( 'square', 'circle', 'portrait' ), 'faculty_directory,faculty_department,faculty_member' );
+		self::builder_select( 'orderby', __( 'Order by', 'faculty-staff' ), array( 'last_name', 'title', 'menu_order', 'date', 'rand' ), 'faculty_directory,faculty_department' );
+		echo '<div class="fsb-field" data-for="faculty_directory,faculty_department,faculty_member"><label>' . esc_html__( 'Button label', 'faculty-staff' ) . '</label><input type="text" data-attr="button" placeholder="' . esc_attr__( 'e.g. View Profile', 'faculty-staff' ) . '" /></div>';
+
+		// Checkboxes.
+		$checks = array(
+			array( 'search', __( 'Show search box', 'faculty-staff' ), 'faculty_directory,faculty_department' ),
+			array( 'filter', __( 'Show department filter', 'faculty-staff' ), 'faculty_directory' ),
+			array( 'sort', __( 'Show A–Z / Z–A sort', 'faculty-staff' ), 'faculty_directory,faculty_department' ),
+			array( 'view_toggle', __( 'Show grid / list view toggle', 'faculty-staff' ), 'faculty_directory,faculty_department' ),
+			array( 'index', __( 'Show A–Z jump bar', 'faculty-staff' ), 'faculty_directory,faculty_department' ),
+			array( 'groupby', __( 'Group by department (headings)', 'faculty-staff' ), 'faculty_directory', 'department', '' ),
+			array( 'show_contact', __( 'Show all contact info on cards', 'faculty-staff' ), 'faculty_directory,faculty_department' ),
+			array( 'show_dept', __( 'Show department line on cards', 'faculty-staff' ), 'faculty_directory,faculty_department,faculty_member' ),
+			array( 'dept_badge', __( 'Department badge on photo', 'faculty-staff' ), 'faculty_directory,faculty_department,faculty_member' ),
+			array( 'show_excerpt', __( 'Show short bio excerpt', 'faculty-staff' ), 'faculty_directory,faculty_department,faculty_member' ),
+		);
+		foreach ( $checks as $c ) {
+			$extra = '';
+			if ( isset( $c[3] ) ) {
+				$extra .= ' data-on="' . esc_attr( $c[3] ) . '"';
+			}
+			if ( isset( $c[4] ) ) {
+				$extra .= ' data-off="' . esc_attr( $c[4] ) . '"';
+			}
+			printf(
+				'<div class="fsb-field fsb-check" data-for="%1$s"><label><input type="checkbox" data-attr="%2$s"%3$s /> %4$s</label></div>',
+				esc_attr( $c[2] ),
+				esc_attr( $c[0] ),
+				$extra, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- composed of esc_attr above.
+				esc_html( $c[1] )
+			);
+		}
+
+		echo '</div>'; // .fs-builder-grid
+
+		echo '<div class="fs-builder-out"><label for="fsb-output">' . esc_html__( 'Your shortcode', 'faculty-staff' ) . '</label><div class="fs-builder-out-row">';
+		echo '<input type="text" id="fsb-output" readonly />';
+		printf(
+			'<button type="button" class="button button-primary" id="fsb-copy" data-copied="%s">%s</button>',
+			esc_attr__( 'Copied', 'faculty-staff' ),
+			esc_html__( 'Copy', 'faculty-staff' )
+		);
+		echo '</div></div>';
+
+		echo '</div>'; // .fs-builder
+	}
+
+	protected static function builder_select( $attr, $label, $options, $for ) {
+		echo '<div class="fsb-field" data-for="' . esc_attr( $for ) . '"><label>' . esc_html( $label ) . '</label><select data-attr="' . esc_attr( $attr ) . '">';
+		foreach ( $options as $opt ) {
+			printf( '<option value="%1$s">%1$s</option>', esc_attr( $opt ) );
+		}
+		echo '</select></div>';
 	}
 
 	/**
