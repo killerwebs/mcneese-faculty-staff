@@ -103,9 +103,28 @@
 		} );
 	}
 
+	// On a bio page, point the "Back" link at the page the visitor came from
+	// (when it's on this site) so they return to their department list rather
+	// than the full directory. Computed client-side so it's never cached.
+	function initBackLink() {
+		var link = document.querySelector( '.fs-back-link' );
+		if ( ! link || ! document.referrer ) {
+			return;
+		}
+		try {
+			var ref = new URL( document.referrer );
+			var here = new URL( window.location.href );
+			if ( ref.origin === here.origin && ref.href !== here.href ) {
+				link.setAttribute( 'href', ref.href );
+				link.textContent = '← ' + ( link.getAttribute( 'data-back-label' ) || 'Back' );
+			}
+		} catch ( e ) {}
+	}
+
 	function init() {
 		var dirs = document.querySelectorAll( '.fs-directory' );
 		Array.prototype.forEach.call( dirs, initDirectory );
+		initBackLink();
 	}
 
 	if ( document.readyState === 'loading' ) {
