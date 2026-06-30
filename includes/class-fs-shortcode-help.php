@@ -225,14 +225,18 @@ class FS_Shortcode_Help {
 			return;
 		}
 
-		echo '<p>' . esc_html__( 'Use a slug (recommended) or the name in the department / dept attribute:', 'faculty-staff' ) . '</p>';
-		echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Department', 'faculty-staff' ) . '</th><th>' . esc_html__( 'Slug', 'faculty-staff' ) . '</th><th>' . esc_html__( 'Count', 'faculty-staff' ) . '</th></tr></thead><tbody>';
+		echo '<p>' . esc_html__( 'Copy a ready-made shortcode for any department, or use the slug in the department / dept attribute yourself:', 'faculty-staff' ) . '</p>';
+		echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Department', 'faculty-staff' ) . '</th><th>' . esc_html__( 'Slug', 'faculty-staff' ) . '</th><th>' . esc_html__( 'Count', 'faculty-staff' ) . '</th><th>' . esc_html__( 'Shortcode', 'faculty-staff' ) . '</th></tr></thead><tbody>';
 		foreach ( $terms as $term ) {
+			$code = '[faculty_department dept="' . $term->slug . '"]';
 			printf(
-				'<tr><td>%s</td><td><code>%s</code></td><td>%d</td></tr>',
+				'<tr><td>%1$s</td><td><code>%2$s</code></td><td>%3$d</td><td><div class="fs-help-example"><code>%4$s</code><button type="button" class="button button-small fs-copy" data-copy="%5$s">%6$s</button></div></td></tr>',
 				esc_html( $term->name ),
 				esc_html( $term->slug ),
-				(int) $term->count
+				(int) $term->count,
+				esc_html( $code ),
+				esc_attr( $code ),
+				esc_html__( 'Copy', 'faculty-staff' )
 			);
 		}
 		echo '</tbody></table>';
