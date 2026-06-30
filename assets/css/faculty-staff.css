@@ -145,11 +145,13 @@
 }
 .fs-card-dept {
 	margin: 8px 0 0;
-	font-size: 12px;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: .06em;
+	font-size: 13px;
+	line-height: 1.45;
 	color: var(--fs-muted);
+}
+.fs-card-dept-label {
+	font-weight: 600;
+	color: var(--fs-text);
 }
 .fs-card-excerpt {
 	margin: 10px 0 0;

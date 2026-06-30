@@ -441,7 +441,8 @@ class FS_Shortcodes {
 			echo '<p class="fs-card-title">' . esc_html( $position ) . '</p>';
 		}
 		if ( self::truthy_att( $atts, 'show_dept' ) && $dept_names ) {
-			echo '<p class="fs-card-dept">' . esc_html( implode( ', ', $dept_names ) ) . '</p>';
+			$label = _n( 'Department:', 'Departments:', count( $dept_names ), 'faculty-staff' );
+			echo '<p class="fs-card-dept"><span class="fs-card-dept-label">' . esc_html( $label ) . '</span> ' . esc_html( implode( ', ', $dept_names ) ) . '</p>';
 		}
 
 		self::render_contact( $post_id, $atts );

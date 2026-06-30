@@ -71,6 +71,7 @@ fs_location, fs_website.
 * New shortcode attributes: show_excerpt (short bio on cards) and button (a "View Profile" call-to-action link).
 * New admin reference page (Faculty & Staff → Shortcodes): copy-paste examples, full attribute tables, and a live list of your departments with a copy-ready shortcode for each.
 * Departments screen: added a Shortcode column with a one-click copy button for each department's [faculty_department] shortcode.
+* show_dept now renders a labeled "Department(s):" line on cards.
 
 = 1.1.0 =
 * Shortcode presentation options: layouts (grid/list/compact/names), photo_shape, accent color, responsive columns, groupby="department", and an A-Z index.
