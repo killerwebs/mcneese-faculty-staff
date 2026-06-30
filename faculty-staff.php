@@ -42,6 +42,7 @@ require_once FS_DIR_PATH . 'includes/class-fs-assets.php';
 
 if ( is_admin() ) {
 	require_once FS_DIR_PATH . 'includes/class-fs-importer.php';
+	require_once FS_DIR_PATH . 'includes/class-fs-shortcode-help.php';
 }
 
 add_action( 'init', array( 'FS_Post_Type', 'register' ) );
@@ -55,6 +56,7 @@ FS_Assets::init();
 
 if ( is_admin() ) {
 	FS_Importer::init();
+	FS_Shortcode_Help::init();
 }
 
 /**
