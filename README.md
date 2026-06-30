@@ -3,7 +3,7 @@
 A lightweight, dependency-free WordPress plugin for managing a faculty/staff directory and displaying it anywhere with shortcodes. Modeled on a liberal-arts directory: a filterable general list, individual bio pages, and per-department embeds.
 
 - **Author:** [Killerwebsites.com](https://killerwebsites.com)
-- **Version:** 1.2.7
+- **Version:** 1.2.8
 - **Requires:** WordPress 5.8+, PHP 7.4+
 
 ## Features
