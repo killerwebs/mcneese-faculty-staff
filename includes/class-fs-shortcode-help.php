@@ -109,6 +109,7 @@ class FS_Shortcode_Help {
 			array( 'sort', 'false', __( 'Show an A–Z / Z–A sort control in the toolbar.', 'faculty-staff' ) ),
 			array( 'show_title', 'true', __( 'Show the position under the name.', 'faculty-staff' ) ),
 			array( 'show_dept', 'false', __( 'Show the department label on each card.', 'faculty-staff' ) ),
+			array( 'dept_badge', 'false', __( 'Show the department as a pill overlay on the photo (like the program cards).', 'faculty-staff' ) ),
 			array( 'show_email', 'false', __( 'Show a clickable email on each card.', 'faculty-staff' ) ),
 			array( 'show_phone', 'false', __( 'Show a clickable phone number on each card.', 'faculty-staff' ) ),
 			array( 'show_location', 'false', __( 'Show the office location on each card.', 'faculty-staff' ) ),

@@ -65,6 +65,7 @@ class FS_Shortcodes {
 				'index'         => 'false', // A-Z jump bar
 				'show_title'    => 'true', // show the position under the name
 				'show_dept'     => 'false', // show department label on each card
+				'dept_badge'    => 'false', // show department as a pill overlay on the photo
 				'show_email'    => 'false',
 				'show_phone'    => 'false',
 				'show_location' => 'false',
@@ -193,6 +194,7 @@ class FS_Shortcodes {
 				'accent'        => '',
 				'show_title'    => 'true',
 				'show_dept'     => 'true',
+				'dept_badge'    => 'false',
 				'show_email'    => 'true',
 				'show_phone'    => 'true',
 				'show_location' => 'true',
@@ -492,6 +494,9 @@ class FS_Shortcodes {
 				);
 			} else {
 				echo '<span class="fs-card-initials" aria-hidden="true">' . esc_html( self::initials( $name ) ) . '</span>';
+			}
+			if ( self::truthy_att( $atts, 'dept_badge' ) && $dept_names ) {
+				echo '<span class="fs-card-badge">' . esc_html( implode( ', ', $dept_names ) ) . '</span>';
 			}
 			echo '</div>';
 			echo '</a>';

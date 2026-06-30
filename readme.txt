@@ -5,7 +5,7 @@ Tags: faculty, staff, directory, shortcode, csv import, departments
 Requires at least: 5.8
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.2.3
+Stable tag: 1.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,7 +65,8 @@ fs_location, fs_website.
 
 == Changelog ==
 
-= 1.2.3 =
+= 1.2.4 =
+* New dept_badge attribute: show the department as a pill overlay on the photo, matching the program cards.
 * Fixed the card button text rendering in the theme's link color instead of white, and enlarged + top-aligned the photo in list view.
 * Edit screen: people now use a clean single-form editor (classic editor) with the detail fields grouped into Position, Contact, and Links & Photo sections directly under the bio.
 * Native theming: directory cards and bio pages inherit the host site's design tokens (colors, fonts, radius) when present, falling back to neutral defaults. Card titles use the site heading font/color, with a gold-accented contact card on bio pages.
