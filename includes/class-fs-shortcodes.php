@@ -75,6 +75,7 @@ class FS_Shortcodes {
 				'button'        => '',      // call-to-action label, e.g. "View Profile" (empty = none)
 				'view_toggle'   => 'false', // Grid / List view switch in the toolbar
 				'sort'          => 'false', // A-Z / Z-A sort control in the toolbar
+				'per_page'      => 0,       // client-side pagination; 0 = show all
 				'number'        => -1,     // max people (-1 = all)
 				'empty'         => __( 'No faculty or staff found.', 'faculty-staff' ),
 			),
@@ -135,11 +136,14 @@ class FS_Shortcodes {
 			$style = '--fs-accent:' . $accent . ';';
 		}
 
+		$per_page = max( 0, (int) $atts['per_page'] );
+
 		ob_start();
 		printf(
-			'<div class="fs-directory" data-layout="%s" data-photo-shape="%s"%s>',
+			'<div class="fs-directory" data-layout="%s" data-photo-shape="%s" data-per-page="%d"%s>',
 			esc_attr( $layout ),
 			esc_attr( $shape ),
+			$per_page,
 			$style ? ' style="' . esc_attr( $style ) . '"' : ''
 		);
 
@@ -168,6 +172,9 @@ class FS_Shortcodes {
 		}
 
 		echo '<p class="fs-no-results" hidden>' . esc_html__( 'No matches.', 'faculty-staff' ) . '</p>';
+		if ( $per_page > 0 ) {
+			echo '<nav class="fs-pager" hidden aria-label="' . esc_attr__( 'Directory pagination', 'faculty-staff' ) . '"></nav>';
+		}
 		echo '</div>'; // .fs-directory
 
 		wp_reset_postdata();

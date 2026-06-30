@@ -18,6 +18,7 @@
 	var DEFAULTS = {
 		layout: 'grid',
 		columns: '3',
+		per_page: '0',
 		photo_shape: 'square',
 		orderby: 'last_name',
 		search: { faculty_directory: 'true', faculty_department: 'false' },

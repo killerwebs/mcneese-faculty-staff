@@ -96,6 +96,7 @@ class FS_Shortcode_Help {
 		return array(
 			array( 'layout', 'grid', __( 'grid, list, compact, or names', 'faculty-staff' ) ),
 			array( 'columns', '3', __( 'Cards per row on desktop.', 'faculty-staff' ) ),
+			array( 'per_page', '0', __( 'Paginate the directory client-side, N per page (0 = show all).', 'faculty-staff' ) ),
 			array( 'columns_md', 'auto', __( 'Cards per row on tablet (≤900px). Defaults to 2.', 'faculty-staff' ) ),
 			array( 'columns_sm', '1', __( 'Cards per row on phones (≤600px).', 'faculty-staff' ) ),
 			array( 'photo_shape', 'square', __( 'square, circle, or portrait.', 'faculty-staff' ) ),
@@ -300,6 +301,7 @@ class FS_Shortcode_Help {
 		// Selects.
 		self::builder_select( 'layout', __( 'Layout', 'faculty-staff' ), array( 'grid', 'list', 'compact', 'names' ), 'faculty_directory,faculty_department,faculty_member' );
 		echo '<div class="fsb-field" data-for="faculty_directory,faculty_department"><label>' . esc_html__( 'Columns', 'faculty-staff' ) . '</label><input type="number" min="1" max="6" value="3" data-attr="columns" /></div>';
+		echo '<div class="fsb-field" data-for="faculty_directory,faculty_department"><label>' . esc_html__( 'Per page (0 = all)', 'faculty-staff' ) . '</label><input type="number" min="0" max="100" value="0" data-attr="per_page" /></div>';
 		self::builder_select( 'photo_shape', __( 'Photo shape', 'faculty-staff' ), array( 'square', 'circle', 'portrait' ), 'faculty_directory,faculty_department,faculty_member' );
 		self::builder_select( 'orderby', __( 'Order by', 'faculty-staff' ), array( 'last_name', 'title', 'menu_order', 'date', 'rand' ), 'faculty_directory,faculty_department' );
 		echo '<div class="fsb-field" data-for="faculty_directory,faculty_department,faculty_member"><label>' . esc_html__( 'Button label', 'faculty-staff' ) . '</label><input type="text" data-attr="button" placeholder="' . esc_attr__( 'e.g. View Profile', 'faculty-staff' ) . '" /></div>';

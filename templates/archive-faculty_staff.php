@@ -22,7 +22,7 @@ get_header();
  *         return 'sort="true" view_toggle="true" dept_badge="true" button="View Profile"';
  *     } );
  */
-$atts    = apply_filters( 'fs_archive_atts', 'sort="true" view_toggle="true" dept_badge="true" show_contact="true" button="View Profile"' );
+$atts    = apply_filters( 'fs_archive_atts', 'sort="true" view_toggle="true" dept_badge="true" show_contact="true" button="View Profile" per_page="12"' );
 $heading = post_type_archive_title( '', false );
 
 if ( is_tax( fs_taxonomy() ) ) {

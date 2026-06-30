@@ -291,6 +291,45 @@
 	padding: 24px 0;
 }
 
+/* ---------- Pagination ---------- */
+.fs-pager {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	justify-content: center;
+	align-items: center;
+	margin-top: 30px;
+}
+.fs-pager[hidden] { display: none; }
+.fs-page {
+	appearance: none;
+	min-width: 38px;
+	height: 38px;
+	padding: 0 10px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--fs-border);
+	border-radius: 6px;
+	background: #fff;
+	color: var(--fs-text);
+	font-size: 14px;
+	line-height: 1;
+	cursor: pointer;
+	transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.fs-page:hover:not(:disabled):not(.fs-page-ellipsis) {
+	border-color: var(--fs-accent);
+	color: var(--fs-accent);
+}
+.fs-page.is-active {
+	background: var(--fs-heading-color);
+	border-color: var(--fs-heading-color);
+	color: #fff;
+}
+.fs-page:disabled { opacity: .45; cursor: default; }
+.fs-page-ellipsis { border: 0; background: none; cursor: default; min-width: 22px; }
+
 /* ---------- Photo shapes ---------- */
 .fs-directory[data-photo-shape="portrait"] .fs-card-photo {
 	aspect-ratio: 3 / 4;
