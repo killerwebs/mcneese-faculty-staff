@@ -56,7 +56,10 @@ class FS_Post_Type {
 				'slug'       => apply_filters( 'fs_rewrite_slug', 'faculty' ),
 				'with_front' => false,
 			),
-			'supports'      => array( 'title', 'editor', 'thumbnail', 'excerpt', 'page-attributes', 'author', 'custom-fields' ),
+			// 'custom-fields' is intentionally omitted: the detail fields are
+			// edited through the organized "Faculty / Staff Details" form, so
+			// the raw Custom Fields box would only duplicate them.
+			'supports'      => array( 'title', 'editor', 'thumbnail', 'excerpt', 'page-attributes', 'author' ),
 			'taxonomies'    => array( fs_taxonomy() ),
 		);
 

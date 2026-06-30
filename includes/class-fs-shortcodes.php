@@ -138,6 +138,7 @@ class FS_Shortcodes {
 					'view_toggle' => $view_toggle,
 					'sort'        => $sort,
 					'layout'      => $layout,
+					'order'       => ( 'DESC' === strtoupper( $atts['order'] ) ) ? 'desc' : 'asc',
 				)
 			);
 		}
@@ -302,6 +303,7 @@ class FS_Shortcodes {
 		$view_toggle = ! empty( $opts['view_toggle'] );
 		$sort        = ! empty( $opts['sort'] );
 		$layout      = isset( $opts['layout'] ) ? $opts['layout'] : 'grid';
+		$sort_dir    = ( isset( $opts['order'] ) && 'desc' === $opts['order'] ) ? 'desc' : 'asc';
 
 		echo '<div class="fs-toolbar">';
 
@@ -330,8 +332,8 @@ class FS_Shortcodes {
 
 		if ( $sort ) {
 			echo '<select class="fs-tb-select fs-sort-select" aria-label="' . esc_attr__( 'Sort order', 'faculty-staff' ) . '">';
-			printf( '<option value="asc">%s</option>', esc_html__( 'A → Z', 'faculty-staff' ) );
-			printf( '<option value="desc">%s</option>', esc_html__( 'Z → A', 'faculty-staff' ) );
+			printf( '<option value="asc"%s>%s</option>', selected( $sort_dir, 'asc', false ), esc_html__( 'A → Z', 'faculty-staff' ) );
+			printf( '<option value="desc"%s>%s</option>', selected( $sort_dir, 'desc', false ), esc_html__( 'Z → A', 'faculty-staff' ) );
 			echo '</select>';
 		}
 
