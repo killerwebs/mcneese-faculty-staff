@@ -17,6 +17,17 @@ class FS_Templates {
 	}
 
 	public static function template_include( $template ) {
+		/**
+		 * Let a site opt out of the plugin's single/archive templates — e.g. to
+		 * use a Breakdance / theme-builder template instead. Return false from
+		 * this filter and the plugin leaves templating entirely to the theme:
+		 *
+		 *     add_filter( 'fs_use_plugin_templates', '__return_false' );
+		 */
+		if ( ! apply_filters( 'fs_use_plugin_templates', true ) ) {
+			return $template;
+		}
+
 		$post_type = fs_post_type();
 
 		if ( is_singular( $post_type ) ) {

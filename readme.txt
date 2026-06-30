@@ -74,6 +74,9 @@ fs_location, fs_website.
 * show_dept now renders a labeled "Department(s):" line on cards.
 * Toolbar controls: optional Grid/List view toggle (view_toggle) and A–Z / Z–A sort (sort).
 * New show_contact shorthand to show email, phone, office, and website on every card at once.
+* Card button restyled to match the McNeese program-card button (color, 6px radius, letter-spacing).
+* Bio + directory archive now render in a centered, padded container so they format correctly on blank/zero themes (e.g. Breakdance) that supply no content wrapper.
+* New fs_use_plugin_templates filter to hand single/archive templating to a page builder or theme instead.
 
 = 1.1.0 =
 * Shortcode presentation options: layouts (grid/list/compact/names), photo_shape, accent color, responsive columns, groupby="department", and an A-Z index.

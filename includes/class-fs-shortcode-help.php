@@ -307,6 +307,7 @@ class FS_Shortcode_Help {
 		echo '<h2>' . esc_html__( 'Bio pages', 'faculty-staff' ) . '</h2>';
 		echo '<div class="fs-help-card">';
 		echo '<p>' . esc_html__( 'Every person automatically gets their own bio page; cards, names, and the “View Profile” button link to it. Colors and fonts inherit from your theme, so the directory and bio pages match the rest of the site.', 'faculty-staff' ) . '</p>';
+		echo '<p class="description">' . wp_kses_post( __( 'Prefer to design these in your page builder (e.g. a Breakdance template for the Faculty &amp; Staff post type and Departments taxonomy)? Add <code>add_filter( \'fs_use_plugin_templates\', \'__return_false\' );</code> and the plugin leaves the single + archive layout to your theme. The <code>[faculty_member]</code> shortcode and the post meta fields are available for dynamic data.', 'faculty-staff' ) ) . '</p>';
 		$archive = get_post_type_archive_link( fs_post_type() );
 		if ( $archive ) {
 			printf(

@@ -19,6 +19,9 @@
 	--fs-radius: var(--mpp-radius-lg, 12px);
 	--fs-radius-sm: var(--mpp-radius, 8px);
 	--fs-heading-font: var(--mpp-heading-font, inherit);
+	--fs-button-bg: #0084c1;        /* matches the McNeese program-card button */
+	--fs-button-bg-hover: #006a9e;
+	--fs-shell-max: var(--mpp-shell-max, 1180px);
 	--fs-columns: 3;
 	--fs-columns-md: 2;
 	--fs-columns-sm: 1;
@@ -213,20 +216,21 @@
 	display: inline-block;
 	margin-top: 14px;
 	padding: 9px 16px;
-	background: var(--fs-accent-strong);
-	border: 1px solid var(--fs-accent-strong);
-	border-radius: var(--fs-radius-sm);
+	background: var(--fs-button-bg, #0084c1);
+	border: 1px solid var(--fs-button-bg, #0084c1);
+	border-radius: 6px;
 	color: #fff;
 	font-size: 14px;
 	font-weight: 600;
-	line-height: 1;
+	line-height: 1.2;
+	letter-spacing: .5px;
 	text-decoration: none;
 	transition: background .15s ease, border-color .15s ease;
 }
 .fs-card-button:hover,
 .fs-card-button:focus {
-	background: var(--fs-accent-dark);
-	border-color: var(--fs-accent-dark);
+	background: var(--fs-button-bg-hover, #006a9e);
+	border-color: var(--fs-button-bg-hover, #006a9e);
 	color: #fff;
 }
 
@@ -371,10 +375,30 @@
 .fs-directory[data-layout="names"] .fs-card-name { font-size: 16px; margin: 0; }
 .fs-directory[data-layout="names"] .fs-card-title { font-size: 14px; }
 
+/* ---------- Page containers ----------
+   Themes built on a "blank/zero" page builder (e.g. Breakdance) inject the
+   header/footer but no content container, so the bio + archive would render
+   full-bleed. These keep them centered and padded like the rest of the site. */
+.fs-single,
+.fs-archive {
+	max-width: var(--fs-shell-max, 1180px);
+	margin-left: auto;
+	margin-right: auto;
+	padding: clamp(28px, 5vw, 64px) 20px;
+}
+.fs-archive-header {
+	margin-bottom: 28px;
+}
+.fs-archive-title {
+	margin: 0 0 8px;
+	font-family: var(--fs-heading-font);
+	color: var(--fs-heading-color);
+}
+
 /* ---------- Single bio ---------- */
 .fs-single-inner {
 	display: grid;
-	grid-template-columns: 280px 1fr;
+	grid-template-columns: 300px 1fr;
 	gap: 40px;
 	align-items: start;
 }
