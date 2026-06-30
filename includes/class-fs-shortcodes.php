@@ -57,7 +57,7 @@ class FS_Shortcodes {
 				'columns_sm'    => '',     // mobile override (<=600px)
 				'photo_shape'   => 'square', // square | circle | portrait
 				'accent'        => '',     // hex color override for this instance
-				'orderby'       => 'title', // title | menu_order | date | rand
+				'orderby'       => 'last_name', // last_name | title | menu_order | date | rand
 				'order'         => 'ASC',
 				'filter'        => 'true', // show the department filter pills
 				'search'        => 'true', // show the live search box
@@ -87,6 +87,19 @@ class FS_Shortcodes {
 		$query = self::query( $atts );
 		if ( ! $query->have_posts() ) {
 			return '<p class="fs-empty">' . esc_html( $atts['empty'] ) . '</p>';
+		}
+
+		// Default order is by last name, which has no DB column — sort here.
+		if ( 'last_name' === $atts['orderby'] && ! empty( $query->posts ) ) {
+			usort(
+				$query->posts,
+				function ( $a, $b ) {
+					return strcmp( self::sort_key( get_the_title( $a->ID ) ), self::sort_key( get_the_title( $b->ID ) ) );
+				}
+			);
+			if ( 'DESC' === strtoupper( $atts['order'] ) ) {
+				$query->posts = array_reverse( $query->posts );
+			}
 		}
 
 		$layout  = in_array( $atts['layout'], self::LAYOUTS, true ) ? $atts['layout'] : 'grid';
@@ -246,9 +259,12 @@ class FS_Shortcodes {
 	 * ----------------------------------------------------------------- */
 
 	protected static function query( $atts ) {
-		$orderby = in_array( $atts['orderby'], array( 'title', 'menu_order', 'date', 'rand' ), true ) ? $atts['orderby'] : 'title';
+		$orderby = in_array( $atts['orderby'], array( 'title', 'menu_order', 'date', 'rand', 'last_name' ), true ) ? $atts['orderby'] : 'last_name';
 		if ( 'menu_order' === $orderby ) {
 			$orderby = 'menu_order title';
+		} elseif ( 'last_name' === $orderby ) {
+			// No DB column for last name; fetch by title, then re-sort in PHP.
+			$orderby = 'title';
 		}
 
 		$args = array(
@@ -480,7 +496,7 @@ class FS_Shortcodes {
 			esc_attr( implode( ' ', $dept_slugs ) ),
 			esc_attr( $haystack ),
 			esc_attr( self::sort_letter( $name ) ),
-			esc_attr( strtolower( wp_strip_all_tags( $name ) ) )
+			esc_attr( self::sort_key( $name ) )
 		);
 
 		if ( $show_photo ) {
@@ -610,11 +626,32 @@ class FS_Shortcodes {
 	}
 
 	/**
-	 * First A-Z letter of a name for the index, or '#' for anything else.
+	 * A last-name-first sort key, ignoring honorifics ("Dr.") and trailing
+	 * credentials (", PhD"). "Dr. Davaron Edwards" -> "edwards davaron edwards",
+	 * so people sort and index by surname rather than the "Dr." prefix.
+	 */
+	protected static function sort_key( $name ) {
+		$name = wp_strip_all_tags( (string) $name );
+		$name = preg_replace( '/,.*$/', '', $name );                                          // drop ", PhD" / ", MS"
+		$name = preg_replace( '/^(dr|prof|professor|mr|mrs|ms|mx|rev|fr)\.?\s+/i', '', $name ); // drop honorific
+		$parts = array_values( array_filter( preg_split( '/\s+/', trim( $name ) ) ) );
+		if ( empty( $parts ) ) {
+			return strtolower( $name );
+		}
+		$suffixes = array( 'jr', 'sr', 'ii', 'iii', 'iv', 'phd', 'md', 'ms', 'mfa', 'dma', 'edd' );
+		$last     = end( $parts );
+		while ( count( $parts ) > 1 && in_array( strtolower( rtrim( $last, '.' ) ), $suffixes, true ) ) {
+			array_pop( $parts );
+			$last = end( $parts );
+		}
+		return strtolower( $last . ' ' . implode( ' ', $parts ) );
+	}
+
+	/**
+	 * First A-Z letter (by surname) for the index, or '#' for anything else.
 	 */
 	protected static function sort_letter( $name ) {
-		$name  = trim( wp_strip_all_tags( $name ) );
-		$first = mb_strtoupper( mb_substr( $name, 0, 1 ) );
+		$first = mb_strtoupper( mb_substr( self::sort_key( $name ), 0, 1 ) );
 		return preg_match( '/[A-Z]/', $first ) ? $first : '#';
 	}
 

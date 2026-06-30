@@ -5,7 +5,7 @@ Tags: faculty, staff, directory, shortcode, csv import, departments
 Requires at least: 5.8
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.2.5
+Stable tag: 1.2.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,7 +32,7 @@ Full directory grid with a department filter bar and live search.
 Attributes:
 * `department` — slug(s) or name(s), comma-separated, to pre-scope the list.
 * `columns` — number of columns (default 3).
-* `orderby` — title | menu_order | date | rand (default title).
+* `orderby` — last_name | title | menu_order | date | rand (default last_name).
 * `order` — ASC | DESC.
 * `filter` — true|false, show the department pills (default true).
 * `search` — true|false, show the search box (default true).
@@ -65,7 +65,8 @@ fs_location, fs_website.
 
 == Changelog ==
 
-= 1.2.5 =
+= 1.2.6 =
+* Sorting and the A–Z index now go by last name (ignoring "Dr." and ", PhD"), and last_name is the default order — previously "Dr." names all clumped under D.
 * Bio page "Back" link now returns to the page the visitor came from (the department list they clicked through from) instead of always the full directory; falls back to the directory archive on direct visits.
 * New dept_badge attribute: show the department as a pill overlay on the photo, matching the program cards.
 * Fixed the card button text rendering in the theme's link color instead of white, and enlarged + top-aligned the photo in list view.

@@ -99,7 +99,7 @@ class FS_Shortcode_Help {
 			array( 'photo_shape', 'square', __( 'square, circle, or portrait.', 'faculty-staff' ) ),
 			array( 'accent', '—', __( 'Hex color to re-skin just this instance, e.g. #8a0050.', 'faculty-staff' ) ),
 			array( 'department', '—', __( 'Limit to one or more departments (slug or name, comma-separated).', 'faculty-staff' ) ),
-			array( 'orderby', 'title', __( 'title, menu_order, date, or rand.', 'faculty-staff' ) ),
+			array( 'orderby', 'last_name', __( 'last_name (surname, ignoring "Dr." / ", PhD"), title, menu_order, date, or rand.', 'faculty-staff' ) ),
 			array( 'order', 'ASC', __( 'ASC or DESC.', 'faculty-staff' ) ),
 			array( 'filter', 'true', __( 'Show the department filter pills.', 'faculty-staff' ) ),
 			array( 'search', 'true', __( 'Show the live search box.', 'faculty-staff' ) ),
