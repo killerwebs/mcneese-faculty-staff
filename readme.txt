@@ -5,7 +5,7 @@ Tags: faculty, staff, directory, shortcode, csv import, departments
 Requires at least: 5.8
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,8 +65,8 @@ fs_location, fs_website.
 
 == Changelog ==
 
-= 1.3.0 =
-* Added client-side pagination (per_page attribute) so long directories page N at a time; the /faculty/ archive now paginates at 12 per page. Search/filter/sort re-paginate live and off-page photos stay unloaded.
+= 1.3.1 =
+* Added client-side pagination (per_page attribute) so long directories page N at a time, in both grid and list view; the /faculty/ archive now paginates at 12 per page. Search/filter/sort re-paginate live and off-page photos stay unloaded.
 * Titles (card names, group/archive/bio headings) are pinned to #1c3654 so the theme can no longer render some of them black.
 * Directory archive (/faculty/) now shows richer cards (department badge, contact info, View Profile button) and the full program-finder toolbar (search + department + sort + view toggle). Customizable via the new fs_archive_atts filter.
 * Shortcodes admin page: added an interactive shortcode builder — pick a type and options and copy the generated shortcode (only non-default options are included).
