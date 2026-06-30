@@ -16,6 +16,63 @@ class FS_Shortcode_Help {
 
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
+
+		// "Shortcode" column on the Departments term list.
+		add_filter( 'manage_edit-' . fs_taxonomy() . '_columns', array( __CLASS__, 'term_columns' ) );
+		add_filter( 'manage_' . fs_taxonomy() . '_custom_column', array( __CLASS__, 'term_column_content' ), 10, 3 );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_copy' ) );
+	}
+
+	/**
+	 * Load the copy-to-clipboard helper on the Departments term screen.
+	 */
+	public static function enqueue_copy( $hook ) {
+		if ( 'edit-tags.php' !== $hook && 'term.php' !== $hook ) {
+			return;
+		}
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || fs_taxonomy() !== $screen->taxonomy ) {
+			return;
+		}
+		wp_enqueue_script( 'fs-admin-copy', FS_DIR_URL . 'assets/js/fs-admin-copy.js', array(), FS_DIR_VERSION, true );
+	}
+
+	/**
+	 * Add a Shortcode column to the Departments list, just before Count.
+	 */
+	public static function term_columns( $columns ) {
+		$new = array();
+		foreach ( $columns as $key => $label ) {
+			if ( 'posts' === $key ) {
+				$new['fs_shortcode'] = __( 'Shortcode', 'faculty-staff' );
+			}
+			$new[ $key ] = $label;
+		}
+		if ( ! isset( $new['fs_shortcode'] ) ) {
+			$new['fs_shortcode'] = __( 'Shortcode', 'faculty-staff' );
+		}
+		return $new;
+	}
+
+	/**
+	 * Render the per-department shortcode + copy button.
+	 */
+	public static function term_column_content( $content, $column, $term_id ) {
+		if ( 'fs_shortcode' !== $column ) {
+			return $content;
+		}
+		$term = get_term( $term_id, fs_taxonomy() );
+		if ( ! $term || is_wp_error( $term ) ) {
+			return $content;
+		}
+		$code = '[faculty_department dept="' . $term->slug . '"]';
+		return sprintf(
+			'<code style="font-size:12px">%1$s</code> <button type="button" class="button button-small fs-copy" data-copy="%2$s" data-copied-label="%3$s">%4$s</button>',
+			esc_html( $code ),
+			esc_attr( $code ),
+			esc_attr__( 'Copied', 'faculty-staff' ),
+			esc_html__( 'Copy', 'faculty-staff' )
+		);
 	}
 
 	public static function menu() {
