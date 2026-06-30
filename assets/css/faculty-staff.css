@@ -10,7 +10,7 @@
 	--fs-accent: var(--mpp-blue, #00529b);
 	--fs-accent-strong: var(--hcl-brand-emphasis, #0076c5);
 	--fs-accent-dark: var(--mpp-blue-dark, #003b73);
-	--fs-heading-color: var(--mpp-blue-dark, #0d3757);
+	--fs-heading-color: #1c3654;
 	--fs-gold: var(--mpp-gold, #fcd61f);
 	--fs-text: var(--mpp-ink, #1f2933);
 	--fs-muted: var(--mpp-ink-soft, #5b6770);
@@ -202,15 +202,15 @@
 	font-size: 20px;
 	font-weight: 600;
 	line-height: 1.25;
-	color: var(--fs-heading-color);
+	color: var(--fs-heading-color) !important;
 }
 .fs-card-name a {
-	color: inherit;
+	color: var(--fs-heading-color) !important;
 	text-decoration: none;
 }
 .fs-card-name a:hover,
 .fs-card-name a:focus {
-	color: var(--fs-accent);
+	color: var(--fs-accent) !important;
 }
 .fs-card-title {
 	margin: 0;
@@ -342,7 +342,7 @@
 	font-size: 22px;
 	font-weight: 700;
 	line-height: 1.2;
-	color: var(--fs-heading-color);
+	color: var(--fs-heading-color) !important;
 }
 
 /* ---------- Layout: list ---------- */
@@ -428,7 +428,7 @@
 .fs-archive-title {
 	margin: 0 0 8px;
 	font-family: var(--fs-heading-font);
-	color: var(--fs-heading-color);
+	color: var(--fs-heading-color) !important;
 }
 
 /* ---------- Single bio ---------- */
@@ -468,7 +468,7 @@
 	margin: 0 0 6px;
 	font-family: var(--fs-heading-font);
 	line-height: 1.15;
-	color: var(--fs-heading-color);
+	color: var(--fs-heading-color) !important;
 }
 .fs-single-position {
 	margin: 0 0 6px;
