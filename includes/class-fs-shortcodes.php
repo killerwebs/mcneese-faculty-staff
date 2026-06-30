@@ -69,8 +69,11 @@ class FS_Shortcodes {
 				'show_phone'    => 'false',
 				'show_location' => 'false',
 				'show_website'  => 'false',
+				'show_contact'  => 'false', // shorthand: show email + phone + office + website
 				'show_excerpt'  => 'false', // short bio excerpt on the card
 				'button'        => '',      // call-to-action label, e.g. "View Profile" (empty = none)
+				'view_toggle'   => 'false', // Grid / List view switch in the toolbar
+				'sort'          => 'false', // A-Z / Z-A sort control in the toolbar
 				'number'        => -1,     // max people (-1 = all)
 				'empty'         => __( 'No faculty or staff found.', 'faculty-staff' ),
 			),
@@ -91,10 +94,20 @@ class FS_Shortcodes {
 
 		$atts['layout'] = $layout; // normalized value drives per-card photo logic.
 
+		// show_contact is a convenience that turns on every contact row.
+		if ( self::truthy( $atts['show_contact'] ) ) {
+			$atts['show_email']    = 'true';
+			$atts['show_phone']    = 'true';
+			$atts['show_location'] = 'true';
+			$atts['show_website']  = 'true';
+		}
+
 		// Filter pills are redundant when scoped to a department or grouped by one.
 		$show_filter = self::truthy( $atts['filter'] ) && empty( $atts['department'] ) && ! $groupby;
 		$show_search = self::truthy( $atts['search'] );
 		$show_index  = self::truthy( $atts['index'] );
+		$view_toggle = self::truthy( $atts['view_toggle'] );
+		$sort        = self::truthy( $atts['sort'] );
 
 		// Column counts, with sensible responsive fallbacks.
 		$columns    = max( 1, (int) $atts['columns'] );
@@ -116,8 +129,17 @@ class FS_Shortcodes {
 			$style ? ' style="' . esc_attr( $style ) . '"' : ''
 		);
 
-		if ( $show_filter || $show_search ) {
-			self::render_toolbar( $query, $show_filter, $show_search );
+		if ( $show_filter || $show_search || $view_toggle || $sort ) {
+			self::render_toolbar(
+				$query,
+				array(
+					'filter'      => $show_filter,
+					'search'      => $show_search,
+					'view_toggle' => $view_toggle,
+					'sort'        => $sort,
+					'layout'      => $layout,
+				)
+			);
 		}
 
 		if ( $show_index ) {
@@ -274,8 +296,16 @@ class FS_Shortcodes {
 		);
 	}
 
-	protected static function render_toolbar( $query, $show_filter, $show_search ) {
+	protected static function render_toolbar( $query, $opts ) {
+		$show_filter = ! empty( $opts['filter'] );
+		$show_search = ! empty( $opts['search'] );
+		$view_toggle = ! empty( $opts['view_toggle'] );
+		$sort        = ! empty( $opts['sort'] );
+		$layout      = isset( $opts['layout'] ) ? $opts['layout'] : 'grid';
+
 		echo '<div class="fs-toolbar">';
+
+		echo '<div class="fs-toolbar-main">';
 
 		if ( $show_search ) {
 			echo '<div class="fs-search">';
@@ -304,6 +334,43 @@ class FS_Shortcodes {
 				}
 				echo '</div>';
 			}
+		}
+
+		echo '</div>'; // .fs-toolbar-main
+
+		if ( $sort || $view_toggle ) {
+			echo '<div class="fs-toolbar-controls">';
+
+			if ( $sort ) {
+				echo '<div class="fs-sort">';
+				echo '<span class="fs-control-label">' . esc_html__( 'Sort', 'faculty-staff' ) . '</span>';
+				echo '<span class="fs-seg" role="group" aria-label="' . esc_attr__( 'Sort order', 'faculty-staff' ) . '">';
+				printf( '<button type="button" class="fs-sort-btn is-active" data-sort="asc" aria-pressed="true">%s</button>', esc_html__( 'A–Z', 'faculty-staff' ) );
+				printf( '<button type="button" class="fs-sort-btn" data-sort="desc" aria-pressed="false">%s</button>', esc_html__( 'Z–A', 'faculty-staff' ) );
+				echo '</span></div>';
+			}
+
+			if ( $view_toggle ) {
+				$list = ( 'list' === $layout );
+				echo '<div class="fs-view">';
+				echo '<span class="fs-control-label">' . esc_html__( 'View', 'faculty-staff' ) . '</span>';
+				echo '<span class="fs-seg" role="group" aria-label="' . esc_attr__( 'View', 'faculty-staff' ) . '">';
+				printf(
+					'<button type="button" class="fs-view-btn%1$s" data-view="grid" aria-pressed="%2$s">%3$s</button>',
+					$list ? '' : ' is-active',
+					$list ? 'false' : 'true',
+					esc_html__( 'Grid', 'faculty-staff' )
+				);
+				printf(
+					'<button type="button" class="fs-view-btn%1$s" data-view="list" aria-pressed="%2$s">%3$s</button>',
+					$list ? ' is-active' : '',
+					$list ? 'true' : 'false',
+					esc_html__( 'List', 'faculty-staff' )
+				);
+				echo '</span></div>';
+			}
+
+			echo '</div>'; // .fs-toolbar-controls
 		}
 
 		echo '</div>'; // .fs-toolbar
@@ -412,10 +479,11 @@ class FS_Shortcodes {
 		$haystack = strtolower( wp_strip_all_tags( $name . ' ' . $position . ' ' . implode( ' ', $dept_names ) ) );
 
 		printf(
-			'<article class="fs-card" data-departments="%s" data-search="%s" data-letter="%s">',
+			'<article class="fs-card" data-departments="%s" data-search="%s" data-letter="%s" data-name="%s">',
 			esc_attr( implode( ' ', $dept_slugs ) ),
 			esc_attr( $haystack ),
-			esc_attr( self::sort_letter( $name ) )
+			esc_attr( self::sort_letter( $name ) ),
+			esc_attr( strtolower( wp_strip_all_tags( $name ) ) )
 		);
 
 		if ( $show_photo ) {

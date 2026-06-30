@@ -57,6 +57,44 @@
 			} );
 		}
 
+		// View toggle (grid / list): swap the directory layout in place.
+		var viewBtns = Array.prototype.slice.call( root.querySelectorAll( '.fs-view-btn' ) );
+		viewBtns.forEach( function ( btn ) {
+			btn.addEventListener( 'click', function () {
+				root.setAttribute( 'data-layout', btn.getAttribute( 'data-view' ) || 'grid' );
+				viewBtns.forEach( function ( b ) {
+					var on = b === btn;
+					b.classList.toggle( 'is-active', on );
+					b.setAttribute( 'aria-pressed', on ? 'true' : 'false' );
+				} );
+			} );
+		} );
+
+		// Sort (A–Z / Z–A): reorder cards within each grid by name.
+		var sortBtns = Array.prototype.slice.call( root.querySelectorAll( '.fs-sort-btn' ) );
+		function applySort( dir ) {
+			var grids = root.querySelectorAll( '.fs-grid' );
+			Array.prototype.forEach.call( grids, function ( grid ) {
+				var items = Array.prototype.slice.call( grid.querySelectorAll( '.fs-card' ) );
+				items.sort( function ( a, b ) {
+					var an = a.getAttribute( 'data-name' ) || '';
+					var bn = b.getAttribute( 'data-name' ) || '';
+					return dir === 'desc' ? bn.localeCompare( an ) : an.localeCompare( bn );
+				} );
+				items.forEach( function ( item ) { grid.appendChild( item ); } );
+			} );
+		}
+		sortBtns.forEach( function ( btn ) {
+			btn.addEventListener( 'click', function () {
+				applySort( btn.getAttribute( 'data-sort' ) || 'asc' );
+				sortBtns.forEach( function ( b ) {
+					var on = b === btn;
+					b.classList.toggle( 'is-active', on );
+					b.setAttribute( 'aria-pressed', on ? 'true' : 'false' );
+				} );
+			} );
+		} );
+
 		// A-Z index: scroll to the first visible card starting with that letter.
 		indexLinks.forEach( function ( link ) {
 			if ( link.classList.contains( 'is-disabled' ) ) {

@@ -34,6 +34,56 @@
 	justify-content: space-between;
 	margin-bottom: 22px;
 }
+.fs-toolbar-main {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 14px;
+	align-items: center;
+}
+.fs-toolbar-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 18px;
+	align-items: center;
+}
+.fs-sort,
+.fs-view {
+	display: inline-flex;
+	align-items: center;
+}
+.fs-control-label {
+	font-size: 13px;
+	color: var(--fs-muted);
+	margin-right: 8px;
+}
+.fs-seg {
+	display: inline-flex;
+	background: #fff;
+	border: 1px solid var(--fs-border);
+	border-radius: 999px;
+	overflow: hidden;
+}
+.fs-seg button {
+	appearance: none;
+	border: 0;
+	background: transparent;
+	color: var(--fs-muted);
+	padding: 7px 16px;
+	font-size: 14px;
+	line-height: 1.2;
+	cursor: pointer;
+	transition: background .15s ease, color .15s ease;
+}
+.fs-seg button + button {
+	border-left: 1px solid var(--fs-border);
+}
+.fs-seg button:hover {
+	color: var(--fs-accent);
+}
+.fs-seg button.is-active {
+	background: var(--fs-accent);
+	color: #fff;
+}
 .fs-filters {
 	display: flex;
 	flex-wrap: wrap;
@@ -267,7 +317,7 @@
 
 /* ---------- Layout: list ---------- */
 .fs-directory[data-layout="list"] .fs-grid {
-	grid-template-columns: repeat(var(--fs-columns), minmax(0, 1fr));
+	grid-template-columns: 1fr; /* one full-width row per person */
 }
 .fs-directory[data-layout="list"] .fs-card {
 	display: grid;
