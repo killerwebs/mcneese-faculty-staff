@@ -11,3 +11,6 @@ Thumbs.db
 # Dependencies (not used today, but safe to ignore)
 node_modules/
 vendor/
+
+# Playwright MCP artifacts
+.playwright-mcp/

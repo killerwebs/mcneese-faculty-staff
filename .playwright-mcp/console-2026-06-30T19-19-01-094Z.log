@@ -1,2 +1,0 @@
-[     225ms] [LOG] JQMIGRATE: Migrate is installed, version 3.4.1 @ https://mcneeserebuild.kinsta.cloud/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1:1
-[     490ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://mcneeserebuild.kinsta.cloud/favicon.ico:0
