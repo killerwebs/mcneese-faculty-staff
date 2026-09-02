@@ -6,7 +6,12 @@
 	'use strict';
 
 	function initDirectory( root ) {
-		var cards = Array.prototype.slice.call( root.querySelectorAll( '.fs-card' ) );
+		// Every card in DOM order, across all grids (grouped directories have
+		// one grid per department). Re-queried because sort reorders the DOM.
+		function allCards() {
+			return Array.prototype.slice.call( root.querySelectorAll( '.fs-card' ) );
+		}
+		var initialOrder = allCards(); // DOM order before any client-side sort
 		var filterSelect = root.querySelector( '.fs-filter-select' );
 		var sortSelect = root.querySelector( '.fs-sort-select' );
 		var groups = Array.prototype.slice.call( root.querySelectorAll( '.fs-group' ) );
@@ -14,7 +19,6 @@
 		var searchInput = root.querySelector( '.fs-search-input' );
 		var noResults = root.querySelector( '.fs-no-results' );
 		var pager = root.querySelector( '.fs-pager' );
-		var grid = root.querySelector( '.fs-grid' );
 
 		var activeDept = '';
 		var query = '';
@@ -22,10 +26,9 @@
 		// Pagination applies only to a flat (non-grouped) directory.
 		var perPage = groups.length ? 0 : ( parseInt( root.getAttribute( 'data-per-page' ), 10 ) || 0 );
 
-		// Cards matching the current department + text filter, in DOM order
-		// (which the sort control may have rearranged).
+		// Cards matching the current department + text filter.
 		function matched() {
-			var list = grid ? Array.prototype.slice.call( grid.querySelectorAll( '.fs-card' ) ) : cards;
+			var list = allCards();
 			return list.filter( function ( card ) {
 				var depts = ( card.getAttribute( 'data-departments' ) || '' ).split( /\s+/ );
 				var haystack = card.getAttribute( 'data-search' ) || '';
@@ -37,7 +40,7 @@
 
 		function render() {
 			var hits = matched();
-			cards.forEach( function ( c ) { c.hidden = true; } );
+			allCards().forEach( function ( c ) { c.hidden = true; } );
 
 			var shown = hits;
 			if ( perPage > 0 ) {
@@ -133,14 +136,25 @@
 				items.sort( function ( a, b ) {
 					var an = a.getAttribute( 'data-name' ) || '';
 					var bn = b.getAttribute( 'data-name' ) || '';
-					return dir === 'desc' ? bn.localeCompare( an ) : an.localeCompare( bn );
+					var cmp = an < bn ? -1 : ( an > bn ? 1 : 0 );
+					return dir === 'desc' ? -cmp : cmp;
 				} );
 				items.forEach( function ( item ) { g.appendChild( item ); } );
 			} );
 		}
+		// Put cards back in their server-rendered order (e.g. menu_order).
+		function restoreOrder() {
+			initialOrder.forEach( function ( card ) {
+				if ( card.parentNode ) { card.parentNode.appendChild( card ); }
+			} );
+		}
 		if ( sortSelect ) {
 			sortSelect.addEventListener( 'change', function () {
-				applySort( sortSelect.value || 'asc' );
+				if ( sortSelect.value === '' ) {
+					restoreOrder();
+				} else {
+					applySort( sortSelect.value );
+				}
 				reset();
 			} );
 		}

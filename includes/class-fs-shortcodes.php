@@ -85,10 +85,19 @@ class FS_Shortcodes {
 
 		FS_Assets::enqueue();
 
+		// last_name is sorted in PHP, so a `number` limit must be applied AFTER
+		// sorting or the subset would be picked by title order instead.
+		$limit = 0;
+		if ( 'last_name' === $atts['orderby'] && (int) $atts['number'] > 0 ) {
+			$limit          = (int) $atts['number'];
+			$atts['number'] = -1;
+		}
+
 		$query = self::query( $atts );
 		if ( ! $query->have_posts() ) {
 			return '<p class="fs-empty">' . esc_html( $atts['empty'] ) . '</p>';
 		}
+		update_post_thumbnail_cache( $query ); // one query for all featured images instead of two per card.
 
 		// Default order is by last name, which has no DB column — sort here.
 		if ( 'last_name' === $atts['orderby'] && ! empty( $query->posts ) ) {
@@ -100,6 +109,9 @@ class FS_Shortcodes {
 			);
 			if ( 'DESC' === strtoupper( $atts['order'] ) ) {
 				$query->posts = array_reverse( $query->posts );
+			}
+			if ( $limit > 0 ) {
+				$query->posts = array_slice( $query->posts, 0, $limit );
 			}
 		}
 
@@ -136,7 +148,7 @@ class FS_Shortcodes {
 			$style = '--fs-accent:' . $accent . ';';
 		}
 
-		$per_page = max( 0, (int) $atts['per_page'] );
+		$per_page = ( 'department' === $groupby ) ? 0 : max( 0, (int) $atts['per_page'] );
 
 		ob_start();
 		printf(
@@ -157,6 +169,7 @@ class FS_Shortcodes {
 					'sort'        => $sort,
 					'layout'      => $layout,
 					'order'       => ( 'DESC' === strtoupper( $atts['order'] ) ) ? 'desc' : 'asc',
+					'alpha'       => in_array( $atts['orderby'], array( 'last_name', 'title' ), true ),
 				)
 			);
 		}
@@ -233,7 +246,7 @@ class FS_Shortcodes {
 			$post = get_page_by_path( sanitize_title( $atts['slug'] ), OBJECT, fs_post_type() );
 		}
 
-		if ( ! $post || fs_post_type() !== $post->post_type ) {
+		if ( ! $post || fs_post_type() !== $post->post_type || 'publish' !== $post->post_status ) {
 			return '';
 		}
 
@@ -329,8 +342,9 @@ class FS_Shortcodes {
 		$sort        = ! empty( $opts['sort'] );
 		$layout      = isset( $opts['layout'] ) ? $opts['layout'] : 'grid';
 		$sort_dir    = ( isset( $opts['order'] ) && 'desc' === $opts['order'] ) ? 'desc' : 'asc';
+		$alpha       = ! empty( $opts['alpha'] ); // is the rendered order already A-Z/Z-A?
 
-		echo '<div class="fs-toolbar">';
+		ob_start();
 
 		if ( $show_search ) {
 			echo '<div class="fs-tb-search">';
@@ -357,8 +371,12 @@ class FS_Shortcodes {
 
 		if ( $sort ) {
 			echo '<select class="fs-tb-select fs-sort-select" aria-label="' . esc_attr__( 'Sort order', 'faculty-staff' ) . '">';
-			printf( '<option value="asc"%s>%s</option>', selected( $sort_dir, 'asc', false ), esc_html__( 'A → Z', 'faculty-staff' ) );
-			printf( '<option value="desc"%s>%s</option>', selected( $sort_dir, 'desc', false ), esc_html__( 'Z → A', 'faculty-staff' ) );
+			if ( ! $alpha ) {
+				// Rendered in menu_order/date/rand: offer (and keep) that order as the default.
+				printf( '<option value="" selected>%s</option>', esc_html__( 'Default order', 'faculty-staff' ) );
+			}
+			printf( '<option value="asc"%s>%s</option>', $alpha ? selected( $sort_dir, 'asc', false ) : '', esc_html__( 'A → Z', 'faculty-staff' ) );
+			printf( '<option value="desc"%s>%s</option>', $alpha ? selected( $sort_dir, 'desc', false ) : '', esc_html__( 'Z → A', 'faculty-staff' ) );
 			echo '</select>';
 		}
 
@@ -382,7 +400,10 @@ class FS_Shortcodes {
 			echo '</div>';
 		}
 
-		echo '</div>'; // .fs-toolbar
+		$inner = trim( ob_get_clean() );
+		if ( '' !== $inner ) {
+			echo '<div class="fs-toolbar">' . $inner . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped pieces above.
+		}
 	}
 
 	/* Inline SVG icons (currentColor) for the toolbar. */
@@ -496,7 +517,7 @@ class FS_Shortcodes {
 			}
 		}
 
-		$haystack = strtolower( wp_strip_all_tags( $name . ' ' . $position . ' ' . implode( ' ', $dept_names ) ) );
+		$haystack = mb_strtolower( wp_strip_all_tags( $name . ' ' . $position . ' ' . implode( ' ', $dept_names ) ) );
 
 		printf(
 			'<article class="fs-card" data-departments="%s" data-search="%s" data-letter="%s" data-name="%s">',
@@ -633,25 +654,32 @@ class FS_Shortcodes {
 	}
 
 	/**
-	 * A last-name-first sort key, ignoring honorifics ("Dr.") and trailing
-	 * credentials (", PhD"). "Dr. Davaron Edwards" -> "edwards davaron edwards",
+	 * Name words with the honorific ("Dr."), trailing credentials (", PhD")
+	 * and suffixes ("Jr.") removed. Shared by sort_key() and initials().
+	 */
+	protected static function name_parts( $name ) {
+		$name  = wp_strip_all_tags( (string) $name );
+		$name  = preg_replace( '/,.*$/', '', $name );                                          // drop ", PhD" / ", MS"
+		$name  = preg_replace( '/^(dr|prof|professor|mr|mrs|ms|mx|rev|fr)\.?\s+/i', '', $name ); // drop honorific
+		$parts = array_values( array_filter( preg_split( '/\s+/', trim( $name ) ) ) );
+		$suffixes = array( 'jr', 'sr', 'ii', 'iii', 'iv', 'phd', 'md', 'ms', 'mfa', 'dma', 'edd' );
+		while ( count( $parts ) > 1 && in_array( mb_strtolower( rtrim( end( $parts ), '.' ) ), $suffixes, true ) ) {
+			array_pop( $parts );
+		}
+		return $parts;
+	}
+
+	/**
+	 * A last-name-first sort key: "Dr. Davaron Edwards" -> "edwards davaron edwards",
 	 * so people sort and index by surname rather than the "Dr." prefix.
 	 */
 	protected static function sort_key( $name ) {
-		$name = wp_strip_all_tags( (string) $name );
-		$name = preg_replace( '/,.*$/', '', $name );                                          // drop ", PhD" / ", MS"
-		$name = preg_replace( '/^(dr|prof|professor|mr|mrs|ms|mx|rev|fr)\.?\s+/i', '', $name ); // drop honorific
-		$parts = array_values( array_filter( preg_split( '/\s+/', trim( $name ) ) ) );
+		$parts = self::name_parts( $name );
 		if ( empty( $parts ) ) {
-			return strtolower( $name );
+			return mb_strtolower( wp_strip_all_tags( (string) $name ) );
 		}
-		$suffixes = array( 'jr', 'sr', 'ii', 'iii', 'iv', 'phd', 'md', 'ms', 'mfa', 'dma', 'edd' );
-		$last     = end( $parts );
-		while ( count( $parts ) > 1 && in_array( strtolower( rtrim( $last, '.' ) ), $suffixes, true ) ) {
-			array_pop( $parts );
-			$last = end( $parts );
-		}
-		return strtolower( $last . ' ' . implode( ' ', $parts ) );
+		$last = end( $parts );
+		return mb_strtolower( $last . ' ' . implode( ' ', $parts ) );
 	}
 
 	/**
@@ -663,8 +691,11 @@ class FS_Shortcodes {
 	}
 
 	protected static function initials( $name ) {
-		$parts = preg_split( '/\s+/', trim( $name ) );
-		$first = $parts ? mb_substr( $parts[0], 0, 1 ) : '';
+		$parts = self::name_parts( $name ); // "Dr. Jane Doe, PhD" -> JD, not DP
+		if ( empty( $parts ) ) {
+			return '';
+		}
+		$first = mb_substr( $parts[0], 0, 1 );
 		$last  = ( count( $parts ) > 1 ) ? mb_substr( end( $parts ), 0, 1 ) : '';
 		return mb_strtoupper( $first . $last );
 	}

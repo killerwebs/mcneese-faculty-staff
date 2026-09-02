@@ -8,8 +8,6 @@
 	/* Inherit the host site's design tokens when present (the McNeese theme
 	   exposes --mpp-* / --hcl-*), with neutral fallbacks for any other site. */
 	--fs-accent: var(--mpp-blue, #00529b);
-	--fs-accent-strong: var(--hcl-brand-emphasis, #0076c5);
-	--fs-accent-dark: var(--mpp-blue-dark, #003b73);
 	--fs-heading-color: #1c3654;
 	--fs-gold: var(--mpp-gold, #fcd61f);
 	--fs-text: var(--mpp-ink, #1f2933);
@@ -17,7 +15,6 @@
 	--fs-border: var(--mpp-rule, #e2e6ea);
 	--fs-bg-soft: var(--mpp-paper-soft, #f5f7f9);
 	--fs-radius: var(--mpp-radius-lg, 12px);
-	--fs-radius-sm: var(--mpp-radius, 8px);
 	--fs-heading-font: var(--mpp-heading-font, inherit);
 	--fs-button-bg: #0084c1;        /* matches the McNeese program-card button */
 	--fs-button-bg-hover: #006a9e;
@@ -302,7 +299,7 @@
 	align-items: center;
 	margin-top: 30px;
 }
-.fs-pager[hidden] { display: none; }
+.fs-pager[hidden] { display: none !important; }
 .fs-page {
 	appearance: none;
 	min-width: 38px;
@@ -374,7 +371,7 @@
 
 /* ---------- Department groups ---------- */
 .fs-group { margin-bottom: 40px; }
-.fs-group[hidden] { display: none; }
+.fs-group[hidden] { display: none !important; }
 .fs-group-title {
 	margin: 0 0 18px;
 	padding-bottom: 8px;

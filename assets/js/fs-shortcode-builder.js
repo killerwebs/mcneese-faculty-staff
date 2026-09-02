@@ -75,17 +75,29 @@
 			field.style.display = applies( field, type ) ? '' : 'none';
 		} );
 
+		// Pagination is ignored for grouped directories, so don't offer it together.
+		var groupEl   = form.querySelector( '[data-attr="groupby"]' );
+		var perPageEl = form.querySelector( '[data-attr="per_page"]' );
+		var grouped   = !! ( groupEl && groupEl.checked && applies( groupEl.closest( '.fsb-field' ), type ) );
+		if ( perPageEl ) {
+			perPageEl.disabled = grouped;
+		}
+
 		var parts = [];
 		fields().forEach( function ( field ) {
 			if ( ! applies( field, type ) ) {
 				return;
 			}
 			var el = control( field );
-			if ( ! el ) {
+			if ( ! el || el.disabled ) {
 				return;
 			}
 			var attr = el.getAttribute( 'data-attr' );
 			var val  = el.type === 'checkbox' ? checkboxVal( el ) : ( el.value || '' ).trim();
+			// Quotes and brackets would break the shortcode syntax.
+			if ( el.type !== 'checkbox' ) {
+				val = val.replace( /["\[\]]/g, '' ).trim();
+			}
 
 			if ( el.getAttribute( 'data-required' ) === '1' ) {
 				if ( val !== '' ) {

@@ -5,7 +5,7 @@ Tags: faculty, staff, directory, shortcode, csv import, departments
 Requires at least: 5.8
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,7 +34,7 @@ Attributes:
 * `columns` — number of columns (default 3).
 * `orderby` — last_name | title | menu_order | date | rand (default last_name).
 * `order` — ASC | DESC.
-* `filter` — true|false, show the department pills (default true).
+* `filter` — true|false, show the department dropdown (default true).
 * `search` — true|false, show the search box (default true).
 * `show_title` — true|false, show position under the name (default true).
 * `show_dept` — true|false, show department label on each card (default false).
@@ -65,7 +65,16 @@ fs_location, fs_website.
 
 == Changelog ==
 
-= 1.3.1 =
+= 1.3.2 =
+* Fixed: grouped directories (groupby="department") showed only the first department after the pagination refactor; every group is visible again and search/index cover all of them.
+* Fixed: [faculty_member] no longer renders draft, pending, or private people on the public site.
+* Fixed: placeholder initials ignore honorifics and credentials ("Dr. Jane Doe, PhD" shows JD, not DP).
+* Fixed: search now matches accented names typed in lowercase (multibyte-safe lowercasing).
+* Fixed: with orderby="menu_order"/"date"/"rand" the sort dropdown offers a "Default order" option that restores the rendered order instead of claiming A-Z.
+* Fixed: number="N" with the last_name order now picks the first N by surname, not by title.
+* Fixed: an empty toolbar no longer renders as a blank gray bar; no empty pager is emitted for grouped directories (and the builder disables Per page when Group by is on).
+* Fixed: the shortcode builder strips quotes/brackets from free-text values and lists every person instead of the first 200.
+* Performance: featured-image lookups are primed in one query instead of two per card.
 * Added client-side pagination (per_page attribute) so long directories page N at a time, in both grid and list view; the /faculty/ archive now paginates at 12 per page. Search/filter/sort re-paginate live and off-page photos stay unloaded.
 * Titles (card names, group/archive/bio headings) are pinned to #1c3654 so the theme can no longer render some of them black.
 * Directory archive (/faculty/) now shows richer cards (department badge, contact info, View Profile button) and the full program-finder toolbar (search + department + sort + view toggle). Customizable via the new fs_archive_atts filter.

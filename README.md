@@ -3,7 +3,7 @@
 A lightweight, dependency-free WordPress plugin for managing a faculty/staff directory and displaying it anywhere with shortcodes. Modeled on a liberal-arts directory: a filterable general list, individual bio pages, and per-department embeds.
 
 - **Author:** [Killerwebsites.com](https://killerwebsites.com)
-- **Version:** 1.3.1
+- **Version:** 1.3.2
 - **Requires:** WordPress 5.8+, PHP 7.4+
 
 ## Features
@@ -44,7 +44,7 @@ Filterable, searchable grid of everyone.
 | `department` | — | Scope to department slug(s)/name(s), comma-separated |
 | `orderby` | `title` | `title`, `menu_order`, `date`, `rand` |
 | `order` | `ASC` | `ASC` or `DESC` |
-| `filter` | `true` | Show the department filter pills |
+| `filter` | `true` | Show the department filter dropdown |
 | `search` | `true` | Show the live search box |
 | `groupby` | — | `department` to render a heading per department |
 | `index` | `false` | Show an A–Z jump bar |

@@ -3,7 +3,7 @@
  * Plugin Name:       McNeese Faculty Staff
  * Plugin URI:        https://killerwebsites.com
  * Description:        Manage faculty & staff and display them anywhere with shortcodes. Includes a filterable directory, per-department lists, individual bio pages, and a CSV importer.
- * Version:           1.3.1
+ * Version:           1.3.2
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Killerwebsites.com
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'FS_DIR_VERSION', '1.3.1' );
+define( 'FS_DIR_VERSION', '1.3.2' );
 define( 'FS_DIR_FILE', __FILE__ );
 define( 'FS_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'FS_DIR_URL', plugin_dir_url( __FILE__ ) );

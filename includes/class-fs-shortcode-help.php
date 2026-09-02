@@ -96,7 +96,7 @@ class FS_Shortcode_Help {
 		return array(
 			array( 'layout', 'grid', __( 'grid, list, compact, or names', 'faculty-staff' ) ),
 			array( 'columns', '3', __( 'Cards per row on desktop.', 'faculty-staff' ) ),
-			array( 'per_page', '0', __( 'Paginate the directory client-side, N per page (0 = show all).', 'faculty-staff' ) ),
+			array( 'per_page', '0', __( 'Paginate the directory client-side, N per page (0 = show all). Ignored when groupby is set.', 'faculty-staff' ) ),
 			array( 'columns_md', 'auto', __( 'Cards per row on tablet (≤900px). Defaults to 2.', 'faculty-staff' ) ),
 			array( 'columns_sm', '1', __( 'Cards per row on phones (≤600px).', 'faculty-staff' ) ),
 			array( 'photo_shape', 'square', __( 'square, circle, or portrait.', 'faculty-staff' ) ),
@@ -255,9 +255,11 @@ class FS_Shortcode_Help {
 			array(
 				'post_type'      => fs_post_type(),
 				'post_status'    => 'publish',
-				'posts_per_page' => 200,
-				'orderby'        => 'title',
-				'order'          => 'ASC',
+				'posts_per_page'         => -1, // every person; only title + slug are used.
+				'orderby'                => 'title',
+				'order'                  => 'ASC',
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
 			)
 		);
 
