@@ -57,7 +57,7 @@ class FS_Shortcodes {
 				'columns_sm'    => '',     // mobile override (<=600px)
 				'photo_shape'   => 'square', // square | circle | portrait
 				'accent'        => '',     // hex color override for this instance
-				'orderby'       => 'title', // title | menu_order | date | rand
+				'orderby'       => 'last_name', // last_name | title | menu_order | date | rand
 				'order'         => 'ASC',
 				'filter'        => 'true', // show the department filter pills
 				'search'        => 'true', // show the live search box
@@ -65,10 +65,17 @@ class FS_Shortcodes {
 				'index'         => 'false', // A-Z jump bar
 				'show_title'    => 'true', // show the position under the name
 				'show_dept'     => 'false', // show department label on each card
+				'dept_badge'    => 'false', // show department as a pill overlay on the photo
 				'show_email'    => 'false',
 				'show_phone'    => 'false',
 				'show_location' => 'false',
 				'show_website'  => 'false',
+				'show_contact'  => 'false', // shorthand: show email + phone + office + website
+				'show_excerpt'  => 'false', // short bio excerpt on the card
+				'button'        => '',      // call-to-action label, e.g. "View Profile" (empty = none)
+				'view_toggle'   => 'false', // Grid / List view switch in the toolbar
+				'sort'          => 'false', // A-Z / Z-A sort control in the toolbar
+				'per_page'      => 0,       // client-side pagination; 0 = show all
 				'number'        => -1,     // max people (-1 = all)
 				'empty'         => __( 'No faculty or staff found.', 'faculty-staff' ),
 			),
@@ -78,9 +85,34 @@ class FS_Shortcodes {
 
 		FS_Assets::enqueue();
 
+		// last_name is sorted in PHP, so a `number` limit must be applied AFTER
+		// sorting or the subset would be picked by title order instead.
+		$limit = 0;
+		if ( 'last_name' === $atts['orderby'] && (int) $atts['number'] > 0 ) {
+			$limit          = (int) $atts['number'];
+			$atts['number'] = -1;
+		}
+
 		$query = self::query( $atts );
 		if ( ! $query->have_posts() ) {
 			return '<p class="fs-empty">' . esc_html( $atts['empty'] ) . '</p>';
+		}
+		update_post_thumbnail_cache( $query ); // one query for all featured images instead of two per card.
+
+		// Default order is by last name, which has no DB column — sort here.
+		if ( 'last_name' === $atts['orderby'] && ! empty( $query->posts ) ) {
+			usort(
+				$query->posts,
+				function ( $a, $b ) {
+					return strcmp( self::sort_key( get_the_title( $a->ID ) ), self::sort_key( get_the_title( $b->ID ) ) );
+				}
+			);
+			if ( 'DESC' === strtoupper( $atts['order'] ) ) {
+				$query->posts = array_reverse( $query->posts );
+			}
+			if ( $limit > 0 ) {
+				$query->posts = array_slice( $query->posts, 0, $limit );
+			}
 		}
 
 		$layout  = in_array( $atts['layout'], self::LAYOUTS, true ) ? $atts['layout'] : 'grid';
@@ -89,10 +121,20 @@ class FS_Shortcodes {
 
 		$atts['layout'] = $layout; // normalized value drives per-card photo logic.
 
+		// show_contact is a convenience that turns on every contact row.
+		if ( self::truthy( $atts['show_contact'] ) ) {
+			$atts['show_email']    = 'true';
+			$atts['show_phone']    = 'true';
+			$atts['show_location'] = 'true';
+			$atts['show_website']  = 'true';
+		}
+
 		// Filter pills are redundant when scoped to a department or grouped by one.
 		$show_filter = self::truthy( $atts['filter'] ) && empty( $atts['department'] ) && ! $groupby;
 		$show_search = self::truthy( $atts['search'] );
 		$show_index  = self::truthy( $atts['index'] );
+		$view_toggle = self::truthy( $atts['view_toggle'] );
+		$sort        = self::truthy( $atts['sort'] );
 
 		// Column counts, with sensible responsive fallbacks.
 		$columns    = max( 1, (int) $atts['columns'] );
@@ -106,16 +148,30 @@ class FS_Shortcodes {
 			$style = '--fs-accent:' . $accent . ';';
 		}
 
+		$per_page = ( 'department' === $groupby ) ? 0 : max( 0, (int) $atts['per_page'] );
+
 		ob_start();
 		printf(
-			'<div class="fs-directory" data-layout="%s" data-photo-shape="%s"%s>',
+			'<div class="fs-directory" data-layout="%s" data-photo-shape="%s" data-per-page="%d"%s>',
 			esc_attr( $layout ),
 			esc_attr( $shape ),
+			$per_page,
 			$style ? ' style="' . esc_attr( $style ) . '"' : ''
 		);
 
-		if ( $show_filter || $show_search ) {
-			self::render_toolbar( $query, $show_filter, $show_search );
+		if ( $show_filter || $show_search || $view_toggle || $sort ) {
+			self::render_toolbar(
+				$query,
+				array(
+					'filter'      => $show_filter,
+					'search'      => $show_search,
+					'view_toggle' => $view_toggle,
+					'sort'        => $sort,
+					'layout'      => $layout,
+					'order'       => ( 'DESC' === strtoupper( $atts['order'] ) ) ? 'desc' : 'asc',
+					'alpha'       => in_array( $atts['orderby'], array( 'last_name', 'title' ), true ),
+				)
+			);
 		}
 
 		if ( $show_index ) {
@@ -129,6 +185,9 @@ class FS_Shortcodes {
 		}
 
 		echo '<p class="fs-no-results" hidden>' . esc_html__( 'No matches.', 'faculty-staff' ) . '</p>';
+		if ( $per_page > 0 ) {
+			echo '<nav class="fs-pager" hidden aria-label="' . esc_attr__( 'Directory pagination', 'faculty-staff' ) . '"></nav>';
+		}
 		echo '</div>'; // .fs-directory
 
 		wp_reset_postdata();
@@ -168,10 +227,13 @@ class FS_Shortcodes {
 				'accent'        => '',
 				'show_title'    => 'true',
 				'show_dept'     => 'true',
+				'dept_badge'    => 'false',
 				'show_email'    => 'true',
 				'show_phone'    => 'true',
 				'show_location' => 'true',
 				'show_website'  => 'true',
+				'show_excerpt'  => 'false',
+				'button'        => '',
 			),
 			$atts,
 			'faculty_member'
@@ -184,7 +246,7 @@ class FS_Shortcodes {
 			$post = get_page_by_path( sanitize_title( $atts['slug'] ), OBJECT, fs_post_type() );
 		}
 
-		if ( ! $post || fs_post_type() !== $post->post_type ) {
+		if ( ! $post || fs_post_type() !== $post->post_type || 'publish' !== $post->post_status ) {
 			return '';
 		}
 
@@ -217,9 +279,12 @@ class FS_Shortcodes {
 	 * ----------------------------------------------------------------- */
 
 	protected static function query( $atts ) {
-		$orderby = in_array( $atts['orderby'], array( 'title', 'menu_order', 'date', 'rand' ), true ) ? $atts['orderby'] : 'title';
+		$orderby = in_array( $atts['orderby'], array( 'title', 'menu_order', 'date', 'rand', 'last_name' ), true ) ? $atts['orderby'] : 'last_name';
 		if ( 'menu_order' === $orderby ) {
 			$orderby = 'menu_order title';
+		} elseif ( 'last_name' === $orderby ) {
+			// No DB column for last name; fetch by title, then re-sort in PHP.
+			$orderby = 'title';
 		}
 
 		$args = array(
@@ -270,11 +335,20 @@ class FS_Shortcodes {
 		);
 	}
 
-	protected static function render_toolbar( $query, $show_filter, $show_search ) {
-		echo '<div class="fs-toolbar">';
+	protected static function render_toolbar( $query, $opts ) {
+		$show_filter = ! empty( $opts['filter'] );
+		$show_search = ! empty( $opts['search'] );
+		$view_toggle = ! empty( $opts['view_toggle'] );
+		$sort        = ! empty( $opts['sort'] );
+		$layout      = isset( $opts['layout'] ) ? $opts['layout'] : 'grid';
+		$sort_dir    = ( isset( $opts['order'] ) && 'desc' === $opts['order'] ) ? 'desc' : 'asc';
+		$alpha       = ! empty( $opts['alpha'] ); // is the rendered order already A-Z/Z-A?
+
+		ob_start();
 
 		if ( $show_search ) {
-			echo '<div class="fs-search">';
+			echo '<div class="fs-tb-search">';
+			echo self::icon_search(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static inline SVG.
 			printf(
 				'<input type="search" class="fs-search-input" placeholder="%s" aria-label="%s" />',
 				esc_attr__( 'Search by name or title…', 'faculty-staff' ),
@@ -286,23 +360,61 @@ class FS_Shortcodes {
 		if ( $show_filter ) {
 			$terms = self::terms_in_query( $query );
 			if ( $terms ) {
-				echo '<div class="fs-filters" role="tablist" aria-label="' . esc_attr__( 'Filter by department', 'faculty-staff' ) . '">';
-				printf(
-					'<button type="button" class="fs-filter is-active" data-dept="" aria-pressed="true">%s</button>',
-					esc_html__( 'All', 'faculty-staff' )
-				);
+				echo '<select class="fs-tb-select fs-filter-select" aria-label="' . esc_attr__( 'Filter by department', 'faculty-staff' ) . '">';
+				printf( '<option value="">%s</option>', esc_html__( 'All Departments', 'faculty-staff' ) );
 				foreach ( $terms as $term ) {
-					printf(
-						'<button type="button" class="fs-filter" data-dept="%s" aria-pressed="false">%s</button>',
-						esc_attr( $term->slug ),
-						esc_html( $term->name )
-					);
+					printf( '<option value="%s">%s</option>', esc_attr( $term->slug ), esc_html( $term->name ) );
 				}
-				echo '</div>';
+				echo '</select>';
 			}
 		}
 
-		echo '</div>'; // .fs-toolbar
+		if ( $sort ) {
+			echo '<select class="fs-tb-select fs-sort-select" aria-label="' . esc_attr__( 'Sort order', 'faculty-staff' ) . '">';
+			if ( ! $alpha ) {
+				// Rendered in menu_order/date/rand: offer (and keep) that order as the default.
+				printf( '<option value="" selected>%s</option>', esc_html__( 'Default order', 'faculty-staff' ) );
+			}
+			printf( '<option value="asc"%s>%s</option>', $alpha ? selected( $sort_dir, 'asc', false ) : '', esc_html__( 'A → Z', 'faculty-staff' ) );
+			printf( '<option value="desc"%s>%s</option>', $alpha ? selected( $sort_dir, 'desc', false ) : '', esc_html__( 'Z → A', 'faculty-staff' ) );
+			echo '</select>';
+		}
+
+		if ( $view_toggle ) {
+			$list = ( 'list' === $layout );
+			echo '<div class="fs-tb-views" role="group" aria-label="' . esc_attr__( 'View', 'faculty-staff' ) . '">';
+			printf(
+				'<button type="button" class="fs-view-btn%1$s" data-view="grid" aria-label="%2$s" aria-pressed="%3$s">%4$s</button>',
+				$list ? '' : ' is-active',
+				esc_attr__( 'Grid view', 'faculty-staff' ),
+				$list ? 'false' : 'true',
+				self::icon_grid() // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static inline SVG.
+			);
+			printf(
+				'<button type="button" class="fs-view-btn%1$s" data-view="list" aria-label="%2$s" aria-pressed="%3$s">%4$s</button>',
+				$list ? ' is-active' : '',
+				esc_attr__( 'List view', 'faculty-staff' ),
+				$list ? 'true' : 'false',
+				self::icon_list() // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static inline SVG.
+			);
+			echo '</div>';
+		}
+
+		$inner = trim( ob_get_clean() );
+		if ( '' !== $inner ) {
+			echo '<div class="fs-toolbar">' . $inner . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped pieces above.
+		}
+	}
+
+	/* Inline SVG icons (currentColor) for the toolbar. */
+	protected static function icon_search() {
+		return '<svg class="fs-tb-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
+	}
+	protected static function icon_grid() {
+		return '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>';
+	}
+	protected static function icon_list() {
+		return '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="4" width="5" height="5" rx="1"></rect><rect x="10" y="5" width="11" height="2" rx="1"></rect><rect x="3" y="14" width="5" height="5" rx="1"></rect><rect x="10" y="15" width="11" height="2" rx="1"></rect></svg>';
 	}
 
 	/**
@@ -405,13 +517,14 @@ class FS_Shortcodes {
 			}
 		}
 
-		$haystack = strtolower( wp_strip_all_tags( $name . ' ' . $position . ' ' . implode( ' ', $dept_names ) ) );
+		$haystack = mb_strtolower( wp_strip_all_tags( $name . ' ' . $position . ' ' . implode( ' ', $dept_names ) ) );
 
 		printf(
-			'<article class="fs-card" data-departments="%s" data-search="%s" data-letter="%s">',
+			'<article class="fs-card" data-departments="%s" data-search="%s" data-letter="%s" data-name="%s">',
 			esc_attr( implode( ' ', $dept_slugs ) ),
 			esc_attr( $haystack ),
-			esc_attr( self::sort_letter( $name ) )
+			esc_attr( self::sort_letter( $name ) ),
+			esc_attr( self::sort_key( $name ) )
 		);
 
 		if ( $show_photo ) {
@@ -426,6 +539,9 @@ class FS_Shortcodes {
 			} else {
 				echo '<span class="fs-card-initials" aria-hidden="true">' . esc_html( self::initials( $name ) ) . '</span>';
 			}
+			if ( self::truthy_att( $atts, 'dept_badge' ) && $dept_names ) {
+				echo '<span class="fs-card-badge">' . esc_html( implode( ', ', $dept_names ) ) . '</span>';
+			}
 			echo '</div>';
 			echo '</a>';
 		}
@@ -437,13 +553,40 @@ class FS_Shortcodes {
 			echo '<p class="fs-card-title">' . esc_html( $position ) . '</p>';
 		}
 		if ( self::truthy_att( $atts, 'show_dept' ) && $dept_names ) {
-			echo '<p class="fs-card-dept">' . esc_html( implode( ', ', $dept_names ) ) . '</p>';
+			$label = _n( 'Department:', 'Departments:', count( $dept_names ), 'faculty-staff' );
+			echo '<p class="fs-card-dept"><span class="fs-card-dept-label">' . esc_html( $label ) . '</span> ' . esc_html( implode( ', ', $dept_names ) ) . '</p>';
 		}
 
 		self::render_contact( $post_id, $atts );
 
+		if ( self::truthy_att( $atts, 'show_excerpt' ) ) {
+			$excerpt = self::excerpt( $post_id );
+			if ( $excerpt ) {
+				echo '<p class="fs-card-excerpt">' . esc_html( $excerpt ) . '</p>';
+			}
+		}
+
+		$button = isset( $atts['button'] ) ? trim( (string) $atts['button'] ) : '';
+		if ( '' !== $button ) {
+			echo '<a class="fs-card-button" href="' . esc_url( $permalink ) . '">' . esc_html( $button ) . '</a>';
+		}
+
 		echo '</div>'; // .fs-card-body
 		echo '</article>';
+	}
+
+	/**
+	 * A short plain-text bio excerpt for cards: the manual excerpt if set,
+	 * otherwise trimmed post content.
+	 */
+	protected static function excerpt( $post_id, $words = 24 ) {
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			return '';
+		}
+		$raw = has_excerpt( $post ) ? $post->post_excerpt : $post->post_content;
+		$raw = wp_strip_all_tags( strip_shortcodes( (string) $raw ) );
+		return '' !== trim( $raw ) ? wp_trim_words( $raw, $words, '…' ) : '';
 	}
 
 	/**
@@ -511,17 +654,48 @@ class FS_Shortcodes {
 	}
 
 	/**
-	 * First A-Z letter of a name for the index, or '#' for anything else.
+	 * Name words with the honorific ("Dr."), trailing credentials (", PhD")
+	 * and suffixes ("Jr.") removed. Shared by sort_key() and initials().
+	 */
+	protected static function name_parts( $name ) {
+		$name  = wp_strip_all_tags( (string) $name );
+		$name  = preg_replace( '/,.*$/', '', $name );                                          // drop ", PhD" / ", MS"
+		$name  = preg_replace( '/^(dr|prof|professor|mr|mrs|ms|mx|rev|fr)\.?\s+/i', '', $name ); // drop honorific
+		$parts = array_values( array_filter( preg_split( '/\s+/', trim( $name ) ) ) );
+		$suffixes = array( 'jr', 'sr', 'ii', 'iii', 'iv', 'phd', 'md', 'ms', 'mfa', 'dma', 'edd' );
+		while ( count( $parts ) > 1 && in_array( mb_strtolower( rtrim( end( $parts ), '.' ) ), $suffixes, true ) ) {
+			array_pop( $parts );
+		}
+		return $parts;
+	}
+
+	/**
+	 * A last-name-first sort key: "Dr. Davaron Edwards" -> "edwards davaron edwards",
+	 * so people sort and index by surname rather than the "Dr." prefix.
+	 */
+	protected static function sort_key( $name ) {
+		$parts = self::name_parts( $name );
+		if ( empty( $parts ) ) {
+			return mb_strtolower( wp_strip_all_tags( (string) $name ) );
+		}
+		$last = end( $parts );
+		return mb_strtolower( $last . ' ' . implode( ' ', $parts ) );
+	}
+
+	/**
+	 * First A-Z letter (by surname) for the index, or '#' for anything else.
 	 */
 	protected static function sort_letter( $name ) {
-		$name  = trim( wp_strip_all_tags( $name ) );
-		$first = mb_strtoupper( mb_substr( $name, 0, 1 ) );
+		$first = mb_strtoupper( mb_substr( self::sort_key( $name ), 0, 1 ) );
 		return preg_match( '/[A-Z]/', $first ) ? $first : '#';
 	}
 
 	protected static function initials( $name ) {
-		$parts = preg_split( '/\s+/', trim( $name ) );
-		$first = $parts ? mb_substr( $parts[0], 0, 1 ) : '';
+		$parts = self::name_parts( $name ); // "Dr. Jane Doe, PhD" -> JD, not DP
+		if ( empty( $parts ) ) {
+			return '';
+		}
+		$first = mb_substr( $parts[0], 0, 1 );
 		$last  = ( count( $parts ) > 1 ) ? mb_substr( end( $parts ), 0, 1 ) : '';
 		return mb_strtoupper( $first . $last );
 	}

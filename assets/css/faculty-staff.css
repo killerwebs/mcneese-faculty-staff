@@ -5,64 +5,126 @@
 .fs-directory,
 .fs-single,
 .fs-archive {
-	--fs-accent: #00529b;
-	--fs-text: #1f2933;
-	--fs-muted: #5b6770;
-	--fs-border: #e2e6ea;
-	--fs-bg-soft: #f5f7f9;
-	--fs-radius: 8px;
+	/* Inherit the host site's design tokens when present (the McNeese theme
+	   exposes --mpp-* / --hcl-*), with neutral fallbacks for any other site. */
+	--fs-accent: var(--mpp-blue, #00529b);
+	--fs-heading-color: #1c3654;
+	--fs-gold: var(--mpp-gold, #fcd61f);
+	--fs-text: var(--mpp-ink, #1f2933);
+	--fs-muted: var(--mpp-ink-soft, #5b6770);
+	--fs-border: var(--mpp-rule, #e2e6ea);
+	--fs-bg-soft: var(--mpp-paper-soft, #f5f7f9);
+	--fs-radius: var(--mpp-radius-lg, 12px);
+	--fs-heading-font: var(--mpp-heading-font, inherit);
+	--fs-button-bg: #0084c1;        /* matches the McNeese program-card button */
+	--fs-button-bg-hover: #006a9e;
+	--fs-badge-bg: #dbeafe;         /* matches the program-card type badge */
+	--fs-badge-color: #1e40af;
+	--fs-shell-max: var(--mpp-shell-max, 1180px);
 	--fs-columns: 3;
 	--fs-columns-md: 2;
 	--fs-columns-sm: 1;
 	color: var(--fs-text);
 }
 
-/* ---------- Toolbar (filter + search) ---------- */
+/* ---------- Toolbar (search + filter + sort + view) ----------
+   Styled to match the site's program-finder bar: a rounded gray container
+   wrapping a search field, dropdowns, and an icon view toggle. */
 .fs-toolbar {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 14px;
+	gap: 12px;
 	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 22px;
-}
-.fs-filters {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-}
-.fs-filter {
-	appearance: none;
+	background: var(--fs-bg-soft);
 	border: 1px solid var(--fs-border);
+	border-radius: 12px;
+	padding: 16px;
+	margin-bottom: 24px;
+}
+
+/* Search field with leading icon */
+.fs-tb-search {
+	flex: 1 1 240px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	background: #fff;
+	border: 1px solid #cbd5e0;
+	border-radius: 6px;
+	padding: 0 12px;
+}
+.fs-tb-search:focus-within {
+	border-color: var(--fs-accent);
+	box-shadow: 0 0 0 3px rgba(0, 82, 155, .12);
+}
+.fs-tb-icon {
+	flex: none;
 	color: var(--fs-muted);
-	padding: 7px 14px;
-	border-radius: 999px;
-	font-size: 14px;
-	line-height: 1.2;
-	cursor: pointer;
-	transition: all .15s ease;
-}
-.fs-filter:hover {
-	border-color: var(--fs-accent);
-	color: var(--fs-accent);
-}
-.fs-filter.is-active {
-	background: var(--fs-accent);
-	border-color: var(--fs-accent);
-	color: #fff;
 }
 .fs-search-input {
-	min-width: 240px;
-	padding: 9px 14px;
-	border: 1px solid var(--fs-border);
-	border-radius: var(--fs-radius);
+	flex: 1;
+	border: 0;
+	background: transparent;
+	padding: 10px 0;
 	font-size: 15px;
+	color: var(--fs-text);
 }
 .fs-search-input:focus {
 	outline: none;
+}
+
+/* Dropdowns (filter + sort) */
+.fs-tb-select {
+	appearance: none;
+	-webkit-appearance: none;
+	background-color: #fff;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%234b5563' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+	border: 1px solid #cbd5e0;
+	border-radius: 6px;
+	padding: 9px 32px 9px 12px;
+	font-size: 14px;
+	color: var(--fs-text);
+	line-height: 1.4;
+	cursor: pointer;
+}
+.fs-tb-select:focus {
+	outline: none;
 	border-color: var(--fs-accent);
 	box-shadow: 0 0 0 3px rgba(0, 82, 155, .12);
+}
+
+/* Icon view toggle */
+.fs-tb-views {
+	display: inline-flex;
+	background: #fff;
+	border: 1px solid #cbd5e0;
+	border-radius: 6px;
+	overflow: hidden;
+}
+.fs-view-btn {
+	appearance: none;
+	border: 0;
+	background: transparent;
+	color: var(--fs-muted);
+	width: 42px;
+	height: 38px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: background .15s ease, color .15s ease;
+}
+.fs-view-btn + .fs-view-btn {
+	border-left: 1px solid #cbd5e0;
+}
+.fs-view-btn:hover {
+	color: var(--fs-accent);
+}
+.fs-view-btn.is-active {
+	background: var(--fs-heading-color);
+	color: #fff;
 }
 
 /* ---------- Grid ---------- */
@@ -82,7 +144,9 @@
 	box-shadow: 0 10px 24px rgba(15, 23, 42, .10);
 	transform: translateY(-2px);
 }
-.fs-card[hidden] { display: none; }
+/* !important so layout rules (e.g. list view's display:grid) can't override
+   the paginated/filtered hidden state. */
+.fs-card[hidden] { display: none !important; }
 .fs-card-photo-link {
 	display: block;
 	text-decoration: none;
@@ -110,22 +174,42 @@
 	color: var(--fs-muted);
 	letter-spacing: 1px;
 }
+.fs-card-badge {
+	position: absolute;
+	bottom: 12px;
+	left: 12px;
+	max-width: calc(100% - 24px);
+	background: var(--fs-badge-bg, #dbeafe);
+	color: var(--fs-badge-color, #1e40af);
+	border-radius: 100px;
+	padding: 4px 10px;
+	font-size: 11px;
+	font-weight: 700;
+	line-height: 1.2;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
 .fs-card-body {
 	padding: 16px 18px 20px;
 }
 .fs-card-name {
 	margin: 0 0 4px;
-	font-size: 18px;
-	line-height: 1.3;
-	color: var(--fs-text);
+	font-family: var(--fs-heading-font);
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 1.25;
+	color: var(--fs-heading-color) !important;
 }
 .fs-card-name a {
-	color: inherit;
+	color: var(--fs-heading-color) !important;
 	text-decoration: none;
 }
 .fs-card-name a:hover,
 .fs-card-name a:focus {
-	color: var(--fs-accent);
+	color: var(--fs-accent) !important;
 }
 .fs-card-title {
 	margin: 0;
@@ -135,10 +219,44 @@
 }
 .fs-card-dept {
 	margin: 8px 0 0;
-	font-size: 12px;
-	text-transform: uppercase;
-	letter-spacing: .04em;
-	color: var(--fs-accent);
+	font-size: 13px;
+	line-height: 1.45;
+	color: var(--fs-muted);
+}
+.fs-card-dept-label {
+	font-weight: 600;
+	color: var(--fs-text);
+}
+.fs-card-excerpt {
+	margin: 10px 0 0;
+	font-size: 14px;
+	line-height: 1.5;
+	color: var(--fs-muted);
+}
+/* Scoped + !important so the host theme's link-color/background rules can't
+   override the button (Breakdance colors content links by default). */
+.fs-directory a.fs-card-button,
+.fs-directory a.fs-card-button:link,
+.fs-directory a.fs-card-button:visited {
+	display: inline-block;
+	margin-top: 14px;
+	padding: 9px 16px;
+	background: var(--fs-button-bg, #0084c1) !important;
+	border: 1px solid var(--fs-button-bg, #0084c1) !important;
+	border-radius: 6px;
+	color: #fff !important;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.2;
+	letter-spacing: .5px;
+	text-decoration: none;
+	transition: background .15s ease, border-color .15s ease;
+}
+.fs-directory a.fs-card-button:hover,
+.fs-directory a.fs-card-button:focus {
+	background: var(--fs-button-bg-hover, #006a9e) !important;
+	border-color: var(--fs-button-bg-hover, #006a9e) !important;
+	color: #fff !important;
 }
 
 /* ---------- Contact rows on cards ---------- */
@@ -171,6 +289,45 @@
 	color: var(--fs-muted);
 	padding: 24px 0;
 }
+
+/* ---------- Pagination ---------- */
+.fs-pager {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	justify-content: center;
+	align-items: center;
+	margin-top: 30px;
+}
+.fs-pager[hidden] { display: none !important; }
+.fs-page {
+	appearance: none;
+	min-width: 38px;
+	height: 38px;
+	padding: 0 10px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--fs-border);
+	border-radius: 6px;
+	background: #fff;
+	color: var(--fs-text);
+	font-size: 14px;
+	line-height: 1;
+	cursor: pointer;
+	transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.fs-page:hover:not(:disabled):not(.fs-page-ellipsis) {
+	border-color: var(--fs-accent);
+	color: var(--fs-accent);
+}
+.fs-page.is-active {
+	background: var(--fs-heading-color);
+	border-color: var(--fs-heading-color);
+	color: #fff;
+}
+.fs-page:disabled { opacity: .45; cursor: default; }
+.fs-page-ellipsis { border: 0; background: none; cursor: default; min-width: 22px; }
 
 /* ---------- Photo shapes ---------- */
 .fs-directory[data-photo-shape="portrait"] .fs-card-photo {
@@ -214,35 +371,48 @@
 
 /* ---------- Department groups ---------- */
 .fs-group { margin-bottom: 40px; }
-.fs-group[hidden] { display: none; }
+.fs-group[hidden] { display: none !important; }
 .fs-group-title {
 	margin: 0 0 18px;
 	padding-bottom: 8px;
 	border-bottom: 2px solid var(--fs-border);
+	font-family: var(--fs-heading-font);
 	font-size: 22px;
+	font-weight: 700;
 	line-height: 1.2;
+	color: var(--fs-heading-color) !important;
 }
 
 /* ---------- Layout: list ---------- */
 .fs-directory[data-layout="list"] .fs-grid {
-	grid-template-columns: repeat(var(--fs-columns), minmax(0, 1fr));
+	grid-template-columns: 1fr; /* one full-width row per person */
 }
 .fs-directory[data-layout="list"] .fs-card {
 	display: grid;
-	grid-template-columns: 96px 1fr;
-	align-items: center;
-	gap: 16px;
-	padding: 14px;
+	grid-template-columns: 150px 1fr;
+	align-items: start;
+	gap: 22px;
+	padding: 18px;
 }
 .fs-directory[data-layout="list"] .fs-card-photo {
-	width: 96px;
+	width: 150px;
 	aspect-ratio: 1 / 1;
 	border-radius: var(--fs-radius);
 }
 .fs-directory[data-layout="list"][data-photo-shape="circle"] .fs-card-photo {
-	width: 96px;
+	width: 150px;
 	margin: 0;
 	border-radius: 50%;
+}
+@media (max-width: 600px) {
+	.fs-directory[data-layout="list"] .fs-card {
+		grid-template-columns: 100px 1fr;
+		gap: 16px;
+	}
+	.fs-directory[data-layout="list"] .fs-card-photo,
+	.fs-directory[data-layout="list"][data-photo-shape="circle"] .fs-card-photo {
+		width: 100px;
+	}
 }
 .fs-directory[data-layout="list"] .fs-card-body { padding: 0; }
 
@@ -279,10 +449,30 @@
 .fs-directory[data-layout="names"] .fs-card-name { font-size: 16px; margin: 0; }
 .fs-directory[data-layout="names"] .fs-card-title { font-size: 14px; }
 
+/* ---------- Page containers ----------
+   Themes built on a "blank/zero" page builder (e.g. Breakdance) inject the
+   header/footer but no content container, so the bio + archive would render
+   full-bleed. These keep them centered and padded like the rest of the site. */
+.fs-single,
+.fs-archive {
+	max-width: var(--fs-shell-max, 1180px);
+	margin-left: auto;
+	margin-right: auto;
+	padding: clamp(28px, 5vw, 64px) 20px;
+}
+.fs-archive-header {
+	margin-bottom: 28px;
+}
+.fs-archive-title {
+	margin: 0 0 8px;
+	font-family: var(--fs-heading-font);
+	color: var(--fs-heading-color) !important;
+}
+
 /* ---------- Single bio ---------- */
 .fs-single-inner {
 	display: grid;
-	grid-template-columns: 280px 1fr;
+	grid-template-columns: 300px 1fr;
 	gap: 40px;
 	align-items: start;
 }
@@ -293,8 +483,11 @@
 }
 .fs-single-contact {
 	margin-top: 18px;
-	border-top: 3px solid var(--fs-accent);
-	padding-top: 14px;
+	background: var(--fs-bg-soft);
+	border: 1px solid var(--fs-border);
+	border-top: 4px solid var(--fs-gold);
+	border-radius: var(--fs-radius);
+	padding: 18px 20px;
 }
 .fs-contact-row {
 	margin: 0 0 10px;
@@ -311,7 +504,9 @@
 }
 .fs-single-name {
 	margin: 0 0 6px;
+	font-family: var(--fs-heading-font);
 	line-height: 1.15;
+	color: var(--fs-heading-color) !important;
 }
 .fs-single-position {
 	margin: 0 0 6px;

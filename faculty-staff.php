@@ -3,7 +3,7 @@
  * Plugin Name:       McNeese Faculty Staff
  * Plugin URI:        https://killerwebsites.com
  * Description:        Manage faculty & staff and display them anywhere with shortcodes. Includes a filterable directory, per-department lists, individual bio pages, and a CSV importer.
- * Version:           1.1.0
+ * Version:           1.3.2
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Killerwebsites.com
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'FS_DIR_VERSION', '1.1.0' );
+define( 'FS_DIR_VERSION', '1.3.2' );
 define( 'FS_DIR_FILE', __FILE__ );
 define( 'FS_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'FS_DIR_URL', plugin_dir_url( __FILE__ ) );
@@ -42,10 +42,12 @@ require_once FS_DIR_PATH . 'includes/class-fs-assets.php';
 
 if ( is_admin() ) {
 	require_once FS_DIR_PATH . 'includes/class-fs-importer.php';
+	require_once FS_DIR_PATH . 'includes/class-fs-shortcode-help.php';
 }
 
 add_action( 'init', array( 'FS_Post_Type', 'register' ) );
 add_action( 'init', array( 'FS_Meta', 'register_meta' ) );
+add_filter( 'use_block_editor_for_post_type', array( 'FS_Post_Type', 'use_classic_editor' ), 10, 2 );
 
 FS_Meta::init();
 FS_Templates::init();
@@ -54,6 +56,7 @@ FS_Assets::init();
 
 if ( is_admin() ) {
 	FS_Importer::init();
+	FS_Shortcode_Help::init();
 }
 
 /**

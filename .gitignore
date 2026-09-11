@@ -11,3 +11,9 @@ Thumbs.db
 # Dependencies (not used today, but safe to ignore)
 node_modules/
 vendor/
+
+# Playwright MCP artifacts
+.playwright-mcp/
+
+# Built plugin zips live here (never committed, never bundled into a build)
+zips/
