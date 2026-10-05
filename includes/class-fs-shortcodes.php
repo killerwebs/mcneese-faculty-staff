@@ -517,7 +517,13 @@ class FS_Shortcodes {
 			}
 		}
 
+		// Search text as written plus a folded copy (no accents or apostrophes),
+		// so "alvarez", "álvarez" and "oneal" all find their person.
 		$haystack = mb_strtolower( wp_strip_all_tags( $name . ' ' . $position . ' ' . implode( ' ', $dept_names ) ) );
+		$plain    = self::fold( $haystack );
+		if ( $plain !== $haystack ) {
+			$haystack .= ' ' . $plain;
+		}
 
 		printf(
 			'<article class="fs-card" data-departments="%s" data-search="%s" data-letter="%s" data-name="%s">',
@@ -672,18 +678,34 @@ class FS_Shortcodes {
 	/**
 	 * A last-name-first sort key: "Dr. Davaron Edwards" -> "edwards davaron edwards",
 	 * so people sort and index by surname rather than the "Dr." prefix.
+	 *
+	 * The key is folded ("Dr. José Álvarez" -> "alvarez jose alvarez",
+	 * "O'Neal" -> "oneal"), so accented surnames sort and index under their
+	 * base letter, and the key orders the same in PHP (strcmp) and in the
+	 * browser's A-Z control, which compares data-name as a plain string.
 	 */
 	protected static function sort_key( $name ) {
 		$parts = self::name_parts( $name );
 		if ( empty( $parts ) ) {
-			return mb_strtolower( wp_strip_all_tags( (string) $name ) );
+			return self::fold( wp_strip_all_tags( (string) $name ) );
 		}
 		$last = end( $parts );
-		return mb_strtolower( $last . ' ' . implode( ' ', $parts ) );
+		return self::fold( $last . ' ' . implode( ' ', $parts ) );
 	}
 
 	/**
-	 * First A-Z letter (by surname) for the index, or '#' for anything else.
+	 * Lower case with accents and apostrophes removed: "Ñúñez" -> "nunez",
+	 * "O'Neal" -> "oneal". Entities are decoded first because get_the_title()
+	 * texturizes "O'Neal" into "O&#8217;Neal".
+	 */
+	protected static function fold( $text ) {
+		$text = remove_accents( html_entity_decode( (string) $text, ENT_QUOTES, 'UTF-8' ) );
+		$text = str_replace( array( "'", "\u{2018}", "\u{2019}" ), '', $text );
+		return mb_strtolower( $text );
+	}
+
+	/**
+	 * First A-Z letter (by folded surname) for the index, or '#' for anything else.
 	 */
 	protected static function sort_letter( $name ) {
 		$first = mb_strtoupper( mb_substr( self::sort_key( $name ), 0, 1 ) );
