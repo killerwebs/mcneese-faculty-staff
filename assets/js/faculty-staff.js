@@ -5,6 +5,15 @@
 ( function () {
 	'use strict';
 
+	// Search text with accents and apostrophes removed, matching the folded
+	// copy the server appends to data-search (FS_Shortcodes::fold()).
+	function fold( text ) {
+		if ( text.normalize ) {
+			text = text.normalize( 'NFD' ).replace( /[̀-ͯ]/g, '' );
+		}
+		return text.replace( /['‘’]/g, '' );
+	}
+
 	function initDirectory( root ) {
 		// Every card in DOM order, across all grids (grouped directories have
 		// one grid per department). Re-queried because sort reorders the DOM.
@@ -22,6 +31,7 @@
 
 		var activeDept = '';
 		var query = '';
+		var plainQuery = '';
 		var page = 1;
 		// Pagination applies only to a flat (non-grouped) directory.
 		var perPage = groups.length ? 0 : ( parseInt( root.getAttribute( 'data-per-page' ), 10 ) || 0 );
@@ -33,7 +43,7 @@
 				var depts = ( card.getAttribute( 'data-departments' ) || '' ).split( /\s+/ );
 				var haystack = card.getAttribute( 'data-search' ) || '';
 				var matchDept = ! activeDept || depts.indexOf( activeDept ) !== -1;
-				var matchText = ! query || haystack.indexOf( query ) !== -1;
+				var matchText = ! query || haystack.indexOf( query ) !== -1 || haystack.indexOf( plainQuery ) !== -1;
 				return matchDept && matchText;
 			} );
 		}
@@ -111,6 +121,7 @@
 		if ( searchInput ) {
 			searchInput.addEventListener( 'input', function () {
 				query = searchInput.value.trim().toLowerCase();
+				plainQuery = fold( query );
 				reset();
 			} );
 		}

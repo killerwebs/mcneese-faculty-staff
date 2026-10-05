@@ -5,7 +5,7 @@ Tags: faculty, staff, directory, shortcode, csv import, departments
 Requires at least: 5.8
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,7 +65,9 @@ fs_location, fs_website.
 
 == Changelog ==
 
-= 1.3.2 =
+= 1.3.3 =
+* Fixed: accented surnames (Álvarez, Çelik, Ñúñez) sort, page and index under their base letter instead of after Z and under "#", on the server and in the A-Z / Z-A sort control. Apostrophes are ignored when sorting, so O'Neal files after Oakes.
+* Fixed: search ignores accents and apostrophes, so "alvarez" finds Álvarez, "espanol" finds Español, and "o'neal" finds O'Neal. Names still display exactly as entered.
 * Fixed: grouped directories (groupby="department") showed only the first department after the pagination refactor; every group is visible again and search/index cover all of them.
 * Fixed: [faculty_member] no longer renders draft, pending, or private people on the public site.
 * Fixed: placeholder initials ignore honorifics and credentials ("Dr. Jane Doe, PhD" shows JD, not DP).
