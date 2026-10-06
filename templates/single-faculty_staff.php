@@ -78,11 +78,15 @@ while ( have_posts() ) :
 				</div>
 
 				<?php
-				$archive = get_post_type_archive_link( fs_post_type() );
-				if ( $archive ) :
-					?>
-					<p class="fs-single-back"><a href="<?php echo esc_url( $archive ); ?>">&larr; <?php esc_html_e( 'Back to Directory', 'faculty-staff' ); ?></a></p>
-				<?php endif; ?>
+				// Default to the directory archive; faculty-staff.js rewrites this
+				// to the referring page (when same-origin) so visitors return to
+				// the department list they came from instead of the full directory.
+				$archive  = get_post_type_archive_link( fs_post_type() );
+				$fallback = $archive ? $archive : home_url( '/' );
+				?>
+				<p class="fs-single-back">
+					<a href="<?php echo esc_url( $fallback ); ?>" class="fs-back-link" data-back-label="<?php esc_attr_e( 'Back', 'faculty-staff' ); ?>">&larr; <?php esc_html_e( 'Back to Directory', 'faculty-staff' ); ?></a>
+				</p>
 			</div>
 
 		</div>

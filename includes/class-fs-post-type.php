@@ -17,6 +17,18 @@ class FS_Post_Type {
 		self::register_taxonomy();
 	}
 
+	/**
+	 * Use the classic editor for people so the detail fields appear as one
+	 * organized form right under the bio, instead of being tucked into a
+	 * block-editor sidebar panel. Hooked on `use_block_editor_for_post_type`.
+	 */
+	public static function use_classic_editor( $use_block, $post_type ) {
+		if ( fs_post_type() === $post_type ) {
+			return false;
+		}
+		return $use_block;
+	}
+
 	protected static function register_post_type() {
 		$labels = array(
 			'name'               => __( 'Faculty & Staff', 'faculty-staff' ),
@@ -44,7 +56,10 @@ class FS_Post_Type {
 				'slug'       => apply_filters( 'fs_rewrite_slug', 'faculty' ),
 				'with_front' => false,
 			),
-			'supports'      => array( 'title', 'editor', 'thumbnail', 'excerpt', 'page-attributes', 'author', 'custom-fields' ),
+			// 'custom-fields' is intentionally omitted: the detail fields are
+			// edited through the organized "Faculty / Staff Details" form, so
+			// the raw Custom Fields box would only duplicate them.
+			'supports'      => array( 'title', 'editor', 'thumbnail', 'excerpt', 'page-attributes', 'author' ),
 			'taxonomies'    => array( fs_taxonomy() ),
 		);
 
